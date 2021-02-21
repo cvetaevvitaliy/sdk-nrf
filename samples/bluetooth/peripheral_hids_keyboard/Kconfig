@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 source "Kconfig.zephyr"
@@ -10,8 +10,9 @@ menu "Nordic BLE HIDS Keyboard sample"
 
 config NFC_OOB_PAIRING
 	bool "Enable NFC OOB pairing"
-	depends on HAS_HW_NRF_NFCT
-	default y
+	default y if BOARD_NRF5340PDK_NRF5340_CPUAPP
+	default y if BOARD_NRF52840DK_NRF52840
+	default y if BOARD_NRF52DK_NRF52832
 	select NFC_T2T_NRFXLIB
 	select NFC_NDEF
 	select NFC_NDEF_MSG

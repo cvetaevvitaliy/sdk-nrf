@@ -1,16 +1,13 @@
 .. _ug_nrf9160:
 
-Working with nRF9160 DK
-#######################
+Working with nRF9160
+####################
 
 .. contents::
    :local:
    :depth: 2
 
 The |NCS| provides support for developing on the nRF9160 System in Package (SiP) using the nRF9160 DK (PCA10090), and :ref:`offers samples <nrf9160_ug_drivs_libs_samples>` dedicated to this device.
-
-See the `nRF9160 DK Hardware`_ guide for detailed information about the nRF9160 DK hardware.
-To get started with the nRF9160 DK, follow the steps in the `nRF9160 DK Getting Started`_ guide.
 
 .. _nrf9160_ug_intro:
 
@@ -19,8 +16,7 @@ Introduction
 
 The nRF9160 SiP integrates an application MCU, a full LTE modem, RF front end, and power management.
 With built-in GPS support, it is dedicated to asset tracking applications.
-
-For more details on the SiP, see the `nRF9160 product website`_ and the `nRF9160 Product Specification`_.
+For more details on the SiP, see the `nRF9160 product website`_.
 
 .. figure:: images/nrf9160_ug_overview.svg
    :alt: Overview of nRF91 application architecture
@@ -34,7 +30,7 @@ Application MCU
 
 The M33 TrustZone divides the application MCU into secure and non-secure domains.
 When the MCU boots, it always starts executing from the secure area.
-The secure bootloader chain starts the :ref:`nrf9160_ug_secure_partition_manager` or :ref:`TF-M <ug_tfm>`, which configures a part of memory and peripherals to be non-secure and then jumps to the main application located in the non-secure area.
+The secure bootloader chain starts the :ref:`nrf9160_ug_secure_partition_manager`, which configures a part of memory and peripherals to be non-secure and then jumps to the main application located in the non-secure area.
 
 In Zephyr, :ref:`zephyr:nrf9160dk_nrf9160` is divided into two different build targets:
 
@@ -64,10 +60,6 @@ This firmware is required to set up the nRF9160 DK so that it can run user appli
 The Secure Partition Manager sample is automatically included in the build for the ``nrf9160dk_nrf9160ns`` build target.
 To disable the automatic inclusion of the Secure Partition Manager sample, set the option :option:`CONFIG_SPM` to "n" in the project configuration.
 
-.. include:: ug_nrf5340.rst
-   :start-after: tfm_support_start
-   :end-before: tfm_support_finish
-
 Application
 -----------
 
@@ -80,20 +72,20 @@ Depending on the configuration, all these images can be built at the same time i
 All nRF9160 samples include the :ref:`secure_partition_manager` sample, which can be enabled or disabled with the :option:`CONFIG_SPM` option.
 Some also include the :ref:`bootloader` sample (:option:`CONFIG_SECURE_BOOT`) and :doc:`mcuboot:index` (:option:`CONFIG_BOOTLOADER_MCUBOOT`).
 
-Socket API
+BSD socket
 ----------
 
-All nRF9160 applications must include the Modem library.
-The Modem library is the primary interface for operating the nRF9160 modem to establish LTE-M, NBIOT, and GNSS connections.
+All nRF9160 applications must include the BSD library.
+The BSD library is the primary interface for operating the nRF9160 modem to establish LTE-M, NBIOT, and GNSS connections.
 
-The Modem library is Nordic Semiconductor's implementation of the Socket API.
-See :ref:`nrfxlib:nrf_modem` for detailed information.
+The BSD library is Nordic Semiconductor's implementation of the BSD Socket API.
+See :ref:`nrfxlib:bsdlib` for detailed information.
 
 LTE modem
 =========
 
 The LTE modem handles LTE communication.
-It is controlled through `AT commands <AT Commands Reference Guide_>`_.
+It is controlled through `AT commands <AT Commands Reference Guide>`_.
 
 The firmware for the modem is available as a precompiled binary.
 You can download the firmware from the `nRF9160 product website (compatible downloads)`_.
@@ -218,7 +210,7 @@ FOTA upgrades
 *************
 
 |fota_upgrades_def|
-FOTA upgrades can be used to apply delta patches to the `LTE modem`_ firmware, full `LTE modem`_ firmware upgrades, and to replace the upgradable bootloader or the application.
+FOTA upgrades can be used to apply delta patches to the `LTE modem`_ firmware and to replace the upgradable bootloader or the application.
 
 .. note::
    Even though the Secure Partition Manager and the application are two individually compiled components, they are treated as a single binary blob in the context of firmware upgrades.
@@ -229,18 +221,17 @@ To perform a FOTA upgrade, complete the following steps:
 1. Make sure that your application supports FOTA upgrades.
       To download and apply FOTA upgrades, your application must use the :ref:`lib_fota_download` library.
       This library deduces the type of upgrade by inspecting the header of the firmware and invokes the :ref:`lib_dfu_target` library to apply the firmware upgrade.
-      By default, the DFU target library supports all kinds of FOTA upgrades except full modem firmware upgrades, but you can disable support for specific targets.
+      By default, the DFU target library supports all kinds of FOTA upgrades, but you can disable support for specific targets.
 
       In addition, the following requirements apply:
 
       * |fota_upgrades_req_mcuboot|
       * If you want to upgrade the upgradable bootloader, the :ref:`bootloader` must be used (:option:`CONFIG_SECURE_BOOT`).
-      * If you want to upgrade the modem firmware through modem delta updates, neither MCUboot nor the immutable bootloader are required, because the modem firmware upgrade is handled by the modem itself.
-      * If you want to perform a full modem firmware upgrade, an external flash memory with minimum 2MB is required.
+      * If you want to upgrade the modem firmware, neither MCUboot nor the immutable bootloader are required, because the modem firmware upgrade is handled by the modem itself.
 
 #. Create a binary file that contains the new image.
       This step does not apply for upgrades of the modem firmware.
-      You can download delta patches and full modem firmware upgrade binaries for the modem firmware from the `nRF9160 product website (compatible downloads)`_.
+      You can download delta patches for the modem firmware from the `nRF9160 product website (compatible downloads)`_.
 
       |fota_upgrades_building|
       The :file:`app_update.bin` file is the file that should be uploaded to the server.
@@ -264,7 +255,7 @@ See the :ref:`aws_fota_sample` sample for a full implementation using AWS.
 Board controller
 ****************
 
-The nRF9160 DK contains an nRF52840 SoC that is used to route some of the nRF9160 SiP pins to different components on the DK, such as LEDs and buttons, and to specific pins of the nRF52840 SoC itself.
+The nRF9160 DK contains an nRF52840 SoC that is used to route some of the nRF9160 SiP pins to different components on the DK, such as the Arduino pin headers, LEDs, and buttons.
 For a complete list of all the routing options available, see the `nRF9160 DK board control section in the nRF9160 DK User Guide`_.
 
 The nRF52840 SoC on the DK comes preprogrammed with a firmware.
@@ -272,35 +263,9 @@ If you need to restore the original firmware at some point, download the nRF9160
 To program the HEX file, use nrfjprog (which is part of the `nRF Command Line Tools`_).
 
 If you want to route some pins differently from what is done in the preprogrammed firmware, program the :ref:`zephyr:hello_world` sample instead of the preprogrammed firmware.
-Build the sample (located under ``ncs/zephyr/samples/hello_world``) for the nrf9160dk_nrf52840 board.
-To change the routing options, enable or disable the corresponding devicetree nodes for that board as needed.
-See :ref:`zephyr:nrf9160dk_board_controller_firmware` for detailed information.
-
-Board revisions
-***************
-
-nRF9160 DK v0.14.0 and later has additional hardware features that are not available on earlier versions of the DK:
-
-* External flash memory
-* I/O expander
-
-To make use of these features, specify the board revision when building your application.
-
-.. note::
-   You must specify the board revision only if you use features that are not available in all board revisions.
-   If you do not specify a board revision, the firmware is built for the default revision (v0.7.0).
-   Newer revisions are compatible with the default revision.
-
-To specify the board revision, append it to the build target when building.
-For example, when building a non-secure application for nRF9160 DK v1.0.0, use ``nrf9160dk_nrf9106ns@1.0.0`` as build target.
-
-When building with |SES|, specify the board revision as additional CMake option (see :ref:`cmake_options` for instructions).
-For example, for nRF9160 DK v1.0.0, add the following CMake option::
-
-  -DBOARD=nrf9160dk_nrf9160ns@1.0.0
-
-See :ref:`zephyr:application_board_version` and :ref:`zephyr:nrf9160dk_additional_hardware` for more information.
-
+Configure the sample (located under ``samples/hello_world``) for the nrf9160dk_nrf52840 board.
+All configuration options can be found under *Board configuration* in menuconfig.
+See :ref:`zephyr:nrf9160dk_nrf52840` for detailed information about the board.
 
 .. _nrf9160_ug_drivs_libs_samples:
 

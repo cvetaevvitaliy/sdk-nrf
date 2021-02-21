@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /** @file
  *  @defgroup bt_mesh_sensor_types Sensor types
  *  @{
- *  @brief All available sensor types from the mesh device properties
- *  specification.
+ *  @brief All available sensor types from the Mesh Device Properties
+ *        Specification.
  */
 
 #ifndef BT_MESH_SENSOR_TYPES_H__

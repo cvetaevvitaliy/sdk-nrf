@@ -13,7 +13,7 @@ This sample also shows how to perform directed advertising.
 Overview
 ********
 
-The sample uses the buttons on a development kit to simulate the movement of a mouse.
+The sample uses the buttons on a development board to simulate the movement of a mouse.
 The four buttons simulate movement to the left, upward, to the right, and downward, respectively.
 Mouse clicks are not simulated.
 
@@ -29,13 +29,12 @@ If all bonding information is used and there is still no connection, then the re
 Requirements
 ************
 
-The sample supports the following development kits:
+* One of the following development boards:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp_and_cpuappns, nrf52840dk_nrf52840, nrf52dk_nrf52832, nrf52833dk_nrf52833, nrf52833dk_nrf52820
-
-.. include:: /includes/hci_rpmsg_overlay.txt
+  * |nRF9160DK|
+  * |nRF5340DK|
+  * |nRF52840DK|
+  * |nRF52DK|
 
 User interface
 **************
@@ -43,12 +42,12 @@ User interface
 Button 1:
    Simulate moving the mouse pointer 5 pixels to the left.
 
-   When pairing, press this button to confirm the passkey value that is printed on the COM listener to pair with the other device.
+   When pairing/bonding, press this button to confirm the passkey value that is printed on the COM listener to pair/bond with the other device.
 
 Button 2:
    Simulate moving the mouse pointer 5 pixels upward.
 
-   When pairing, press this button to reject the passkey value that is printed on the COM listener to prevent pairing with the other device.
+   When pairing/bonding, press this button to reject the passkey value that is printed on the COM listener to prevent pairing/bonding with the other device.
 
 Button 3:
    Simulate moving the mouse pointer 5 pixels to the right.
@@ -67,16 +66,16 @@ Building and running
 Testing
 =======
 
-After programming the sample to your development kit, you can test it either by connecting the development kit as a mouse device to a Microsoft Windows computer or by connecting to it with `nRF Connect for Desktop`_.
+After programming the sample to your board, you can test it either by connecting the board as a mouse device to a Microsoft Windows computer or by connecting to it with `nRF Connect for Desktop`_.
 
 Testing with a Microsoft Windows computer
 -----------------------------------------
 
 To test with a Microsoft Windows computer that has a Bluetooth radio, complete the following steps:
 
-1. Power on your development kit.
+1. Power on your development board.
 #. On your Windows computer, search for Bluetooth devices and connect to the device named "NCS HIDS mouse".
-#. Push **Button 1** on the kit.
+#. Push **Button 1** on the board.
    Observe that the mouse pointer on the computer moves to the left.
 #. Push **Button 2**.
    Observe that the mouse pointer on the computer moves upward.
@@ -92,7 +91,7 @@ Testing with nRF Connect for Desktop
 
 To test with `nRF Connect for Desktop`_, complete the following steps:
 
-1. Power on your development kit.
+1. Power on your development board.
 #. Connect to the device from nRF Connect (the device is advertising as "NCS HIDS mouse").
 #. Optionally, bond to the device.
    To do so, click the settings button for the device in nRF Connect, select :guilabel:`Pair`, check :guilabel:`Perform Bonding`, and click :guilabel:`Pair`.
@@ -101,7 +100,7 @@ To test with `nRF Connect for Desktop`_, complete the following steps:
    Wait until the bond is established before you continue.
 #. Observe that the services of the connected device are shown.
 #. Click the :guilabel:`Play` button for all HID Report characteristics.
-#. Push **Button 1** on the kit.
+#. Push **Button 1** on the board.
    Observe that a notification is received on one of the HID Report characteristics, containing the value ``FB0F00``.
 
    Mouse motion reports contain data with an X-translation and a Y-translation.

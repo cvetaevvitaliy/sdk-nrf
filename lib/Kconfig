@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 menu "Libraries"
 
 rsource "agps/Kconfig"
 rsource "bin/Kconfig"
-rsource "nrf_modem_lib/Kconfig"
+rsource "bsdlib/Kconfig"
 rsource "adp536x/Kconfig"
 rsource "at_cmd/Kconfig"
 rsource "st25r3911b/Kconfig"
@@ -28,6 +28,5 @@ rsource "modem_key_mgmt/Kconfig"
 rsource "supl/Kconfig"
 rsource "date_time/Kconfig"
 rsource "ram_pwrdn/Kconfig"
-rsource "edge_impulse/Kconfig"
 
 endmenu

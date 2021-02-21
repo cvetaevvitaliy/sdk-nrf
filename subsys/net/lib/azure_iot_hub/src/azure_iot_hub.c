@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020 Nordic Semiconductor ASA
+ * Copyright (client) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <net/mqtt.h>
@@ -40,7 +40,7 @@ LOG_MODULE_REGISTER(azure_iot_hub, CONFIG_AZURE_IOT_HUB_LOG_LEVEL);
 #define TOPIC_TWIN_REPORT	"$iothub/twin/PATCH/properties/reported/?$rid=%d"
 #define TOPIC_EVENTS		"devices/%s/messages/events/%s"
 #define TOPIC_TWIN_REQUEST	"$iothub/twin/GET/?$rid=%d"
-#define TOPIC_DIRECT_METHOD_RES	"$iothub/methods/res/%d/?$rid=%s"
+#define TOPIC_DIRECT_METHOD_RES	"$iothub/methods/res/%d/?$rid=%d"
 
 /* Subscription topics */
 #define TOPIC_DEVICEBOUND	"devices/%s/messages/devicebound/#"
@@ -70,26 +70,16 @@ static struct azure_iot_hub_config conn_config = {
 static azure_iot_hub_evt_handler_t evt_handler;
 
 /* If DPS is used, the IoT hub hostname is obtained through that service,
- * otherwise it has to be set in compile time using
+ * otherwise it has to be set compile time using
  * @option{CONFIG_AZURE_IOT_HUB_HOSTNAME}. The maximal size is length of hub
- * name + device ID length + length of "/?api-version=2018-06-30". In the case of DPS,
- * the length of ".azure-devices-provisioning.net/" is also added.
- * When @option{CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP} is used, the app sets the
- * device ID in runtime, and the hostname is derived from that.
+ * name + device ID length + lengths of ".azure-devices-provisioning.net/"
+ * and "/?api-version=2018-06-30"
  */
-#if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS) || IS_ENABLED(CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP)
-
 #if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
 #define USER_NAME_BUF_LEN	(CONFIG_AZURE_IOT_HUB_HOSTNAME_MAX_LEN + \
 				CONFIG_AZURE_IOT_HUB_DEVICE_ID_MAX_LEN + \
 				sizeof(".azure-devices-provisioning.net/") + \
 				sizeof("/?api-version=2018-06-30"))
-#else
-#define USER_NAME_BUF_LEN	(sizeof(CONFIG_AZURE_IOT_HUB_HOSTNAME "/") + \
-				CONFIG_AZURE_IOT_HUB_DEVICE_ID_MAX_LEN + \
-				sizeof("/?api-version=2018-06-30"))
-#endif
-
 static char user_name_buf[USER_NAME_BUF_LEN];
 static struct mqtt_utf8 user_name = {
 	.utf8 = user_name_buf,
@@ -102,19 +92,13 @@ static struct mqtt_utf8 user_name = {
 #endif /* IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS) */
 
 enum connection_state {
-	/* The library is uninitialized. */
 	STATE_IDLE,
-	/* The library is initialized, no connection established. */
 	STATE_INIT,
-	/* Connecting to Azure IoT Hub. */
 	STATE_CONNECTING,
-	/* Connected to Azure IoT Hub. */
 	STATE_CONNECTED,
-	/* Disconnecting from Azure IoT Hub. */
-	STATE_DISCONNECTING
+	STATE_DISCONNECTING,
 };
 
-/* Set the initial connection state of the library. */
 static enum connection_state connection_state = STATE_IDLE;
 static char rx_buffer[CONFIG_AZURE_IOT_HUB_MQTT_RX_TX_BUFFER_LEN];
 static char tx_buffer[CONFIG_AZURE_IOT_HUB_MQTT_RX_TX_BUFFER_LEN];
@@ -146,83 +130,6 @@ static void azure_iot_hub_notify_event(struct azure_iot_hub_evt *evt)
 	if (evt_handler) {
 		evt_handler(evt);
 	}
-}
-
-const char *state_name_get(enum connection_state state)
-{
-	switch (state) {
-	case STATE_IDLE: return "STATE_IDLE";
-	case STATE_INIT: return "STATE_INIT";
-	case STATE_CONNECTING: return "STATE_CONNECTING";
-	case STATE_CONNECTED: return "STATE_CONNECTED";
-	case STATE_DISCONNECTING: return "STATE_DISCONNECTING";
-	default: return "STATE_UNKNOWN";
-	}
-}
-
-static void connection_state_set(enum connection_state new_state)
-{
-	bool notify_error = false;
-
-	/* Check for legal state transitions. */
-	switch (connection_state) {
-	case STATE_IDLE:
-		if (new_state != STATE_INIT) {
-			notify_error = true;
-		}
-		break;
-	case STATE_INIT:
-		if (new_state != STATE_CONNECTING &&
-		    new_state != STATE_INIT) {
-			notify_error = true;
-		}
-		break;
-	case STATE_CONNECTING:
-		if (new_state != STATE_CONNECTED &&
-		    new_state != STATE_INIT) {
-			notify_error = true;
-		}
-		break;
-	case STATE_CONNECTED:
-		if (new_state != STATE_DISCONNECTING &&
-		    new_state != STATE_INIT) {
-			notify_error = true;
-		}
-		break;
-	case STATE_DISCONNECTING:
-		if (new_state != STATE_INIT) {
-			notify_error = true;
-		}
-		break;
-	default:
-		LOG_ERR("New connection state unknown");
-		notify_error = true;
-		break;
-	}
-
-	if (notify_error) {
-		struct azure_iot_hub_evt evt = {
-			.type = AZURE_IOT_HUB_EVT_ERROR,
-			.data.err = -EINVAL
-		};
-
-		LOG_ERR("Invalid connection state transition, %s --> %s",
-			log_strdup(state_name_get(connection_state)),
-			log_strdup(state_name_get(new_state)));
-
-		azure_iot_hub_notify_event(&evt);
-		return;
-	}
-
-	connection_state = new_state;
-
-	LOG_DBG("New connection state: %s",
-		log_strdup(state_name_get(connection_state)));
-}
-
-static bool connection_state_verify(enum connection_state state)
-{
-	return (connection_state == state);
 }
 
 static int publish_get_payload(struct mqtt_client *const client, size_t length)
@@ -281,12 +188,11 @@ static int topic_subscribe(void)
 	err = mqtt_subscribe(&client, &sub_list);
 	if (err) {
 		LOG_ERR("Failed to subscribe to topic list, error: %d", err);
-		return err;
 	}
 
 	LOG_DBG("Successfully subscribed to default topics");
 
-	return 0;
+	return err;
 }
 
 static bool direct_method_process(struct topic_parser_data *topic,
@@ -315,20 +221,9 @@ static bool direct_method_process(struct topic_parser_data *topic,
 	}
 
 	/* Get request ID */
-	for (size_t i = 0; i < topic->prop_bag_count; i++) {
-		if (strcmp("$rid", topic->prop_bag[i].key) == 0) {
-			evt.data.method.rid = topic->prop_bag[i].value;
-			break;
-		}
-	}
+	evt.data.method.rid = atoi(topic->prop_bag[0].value);
 
-	if (evt.data.method.rid == NULL) {
-		LOG_WRN("No request ID, direct method processing aborted");
-		return false;
-	}
-
-	LOG_DBG("Direct method request ID: %s",
-		log_strdup(evt.data.method.rid));
+	LOG_DBG("Direct method request ID: %d", evt.data.method.rid);
 
 	azure_iot_hub_notify_event(&evt);
 
@@ -361,20 +256,6 @@ static void device_twin_result_process(struct topic_parser_data *topic,
 		.data.msg.len = payload_len,
 	};
 
-
-	/* Get request ID */
-	for (size_t i = 0; i < topic->prop_bag_count; i++) {
-		if (strcmp("$rid", topic->prop_bag[i].key) == 0) {
-			evt.data.result.rid = topic->prop_bag[i].value;
-			break;
-		}
-	}
-
-	if (evt.data.result.rid == NULL) {
-		LOG_WRN("No request ID, device twin processing aborted");
-		return;
-	}
-
 	/* Status codes
 	 *	200: Response to request for device twin from
 	 *	     the device.
@@ -392,11 +273,11 @@ static void device_twin_result_process(struct topic_parser_data *topic,
 
 		if (err < 0) {
 			LOG_ERR("Failed to process FOTA msg");
+			return;
 		} else if (err == 1) {
 			LOG_DBG("FOTA message handled");
+			return;
 		}
-
-		/* Forward the device twin to the application. */
 #endif /* IS_ENABLED(CONFIG_AZURE_FOTA) */
 		evt.type = AZURE_IOT_HUB_EVT_TWIN_RECEIVED;
 		break;
@@ -529,11 +410,11 @@ static void on_publish(struct mqtt_client *const client,
 		err = azure_fota_msg_process(payload_buf, payload_len);
 		if (err < 0) {
 			LOG_ERR("Failed to process FOTA message");
+			return;
 		} else if (err == 1) {
 			LOG_DBG("Device twin update handled (FOTA)");
+			return;
 		}
-
-		/* Forward the device twin to the application. */
 #endif /* IS_ENABLED(CONFIG_AZURE_FOTA) */
 		evt.type = AZURE_IOT_HUB_EVT_TWIN_DESIRED_RECEIVED;
 
@@ -572,12 +453,11 @@ static void mqtt_evt_handler(struct mqtt_client *const client,
 			LOG_WRN("Is the device certificate valid?");
 			evt.data.err = mqtt_evt->param.connack.return_code;
 			evt.type = AZURE_IOT_HUB_EVT_CONNECTION_FAILED;
-			connection_state_set(STATE_INIT);
 			azure_iot_hub_notify_event(&evt);
 			return;
 		}
 
-		connection_state_set(STATE_CONNECTED);
+		connection_state = STATE_CONNECTED;
 
 		LOG_DBG("MQTT client connected");
 
@@ -601,7 +481,7 @@ static void mqtt_evt_handler(struct mqtt_client *const client,
 	case MQTT_EVT_DISCONNECT:
 		LOG_DBG("MQTT_EVT_DISCONNECT: result = %d", mqtt_evt->result);
 
-		connection_state_set(STATE_INIT);
+		connection_state = STATE_INIT;
 		evt.type = AZURE_IOT_HUB_EVT_DISCONNECTED;
 
 #if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
@@ -655,18 +535,13 @@ static void mqtt_evt_handler(struct mqtt_client *const client,
 	}
 }
 
-#if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS) || IS_ENABLED(CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP)
+#if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
 static struct mqtt_utf8 *user_name_get(void)
 {
 	ssize_t len;
 
-#if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
 	len = snprintk(user_name_buf, sizeof(user_name_buf), USER_NAME_TEMPLATE,
 		       dps_hostname_get(), conn_config.device_id);
-#else
-	len = snprintk(user_name_buf, sizeof(user_name_buf), USER_NAME_TEMPLATE,
-		       CONFIG_AZURE_IOT_HUB_HOSTNAME, conn_config.device_id);
-#endif
 	if ((len < 0) || (len > sizeof(user_name_buf))) {
 		LOG_ERR("Failed to create user name");
 		return NULL;
@@ -766,7 +641,7 @@ static int broker_init(bool dps)
 }
 #endif /* !defined(CONFIG_AZURE_IOT_HUB_STATIC_IPV4) */
 
-#if !defined(CONFIG_NRF_MODEM_LIB)
+#if !defined(CONFIG_BSD_LIBRARY)
 static int certificates_provision(void)
 {
 	static bool certs_added;
@@ -809,7 +684,7 @@ static int certificates_provision(void)
 
 	return 0;
 }
-#endif /* !defined(CONFIG_NRF_MODEM_LIB) */
+#endif /* !defined(CONFIG_BSD_LIBRARY) */
 
 static int client_broker_init(struct mqtt_client *const client, bool dps)
 {
@@ -846,15 +721,21 @@ static int client_broker_init(struct mqtt_client *const client, bool dps)
 	tls_cfg->cipher_list		= NULL; /* Use default */
 	tls_cfg->sec_tag_count		= ARRAY_SIZE(sec_tag_list);
 	tls_cfg->sec_tag_list		= sec_tag_list;
-	tls_cfg->session_cache		= TLS_SESSION_CACHE_DISABLED;
 
-#if !defined(CONFIG_NRF_MODEM_LIB)
+#if defined(CONFIG_BSD_LIBRARY)
+	tls_cfg->session_cache		=
+		IS_ENABLED(CONFIG_AZURE_IOT_HUB_TLS_SESSION_CACHING) ?
+			TLS_SESSION_CACHE_ENABLED : TLS_SESSION_CACHE_DISABLED;
+#else
+	/* TLS session caching is not supported by the Zephyr network stack */
+	tls_cfg->session_cache = TLS_SESSION_CACHE_DISABLED;
+
 	err = certificates_provision();
 	if (err) {
 		LOG_ERR("Could not provision certificates, error: %d", err);
 		return err;
 	}
-#endif /* !defined(CONFIG_NRF_MODEM_LIB) */
+#endif /* !defined(CONFIG_BSD_LIBRARY) */
 
 #if IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS)
 	if (dps_get_reg_state() == DPS_STATE_REGISTERING) {
@@ -888,9 +769,6 @@ static int client_broker_init(struct mqtt_client *const client, bool dps)
 		tls_cfg->hostname = dps_hostname_get();
 		client->user_name = user_name_get();
 	}
-#elif IS_ENABLED(CONFIG_AZURE_IOT_HUB_DEVICE_ID_APP)
-	tls_cfg->hostname = CONFIG_AZURE_IOT_HUB_HOSTNAME;
-	client->user_name = user_name_get();
 #else /* IS_ENABLED(CONFIG_AZURE_IOT_HUB_DPS) */
 	tls_cfg->hostname = CONFIG_AZURE_IOT_HUB_HOSTNAME;
 	client->user_name = &user_name;
@@ -916,8 +794,8 @@ static int connect_client(struct azure_iot_hub_config *cfg)
 		err = dps_start();
 		if (err == -EALREADY) {
 			use_dps = false;
-			LOG_DBG("The device is already registered to IoT hub");
-		} else if (err) {
+			LOG_INF("The device is already registered to IoT hub");
+		} else if (err == -EFAULT) {
 			LOG_ERR("Failed to start DPS");
 			return err;
 		}
@@ -930,6 +808,8 @@ static int connect_client(struct azure_iot_hub_config *cfg)
 		return err;
 	}
 
+	connection_state = STATE_CONNECTING;
+
 	/* Notify _CONNECTING event, either to IoT hub or DPS */
 	azure_iot_hub_notify_event(&evt);
 
@@ -941,6 +821,8 @@ static int connect_client(struct azure_iot_hub_config *cfg)
 
 	/* Set the current socket and start reading from it in polling thread */
 	conn_config.socket = client.transport.tls.sock;
+
+	k_sem_give(&connection_poll_sem);
 
 	return 0;
 }
@@ -998,12 +880,9 @@ static void dps_handler(enum dps_reg_state state)
 	LOG_DBG("Connecting to assigned IoT hub (%s)",
 		log_strdup(dps_hostname_get()));
 
-	connection_state_set(STATE_CONNECTING);
-
 	err = connect_client(&conn_config);
 	if (err) {
-		LOG_ERR("Failed to connect MQTT client, error: %d", err);
-		connection_state_set(STATE_INIT);
+		LOG_ERR("Failed connection to IoT hub, err: %d", err);
 	}
 }
 #endif
@@ -1072,7 +951,6 @@ static void fota_evt_handler(struct azure_fota_event *fota_evt)
 		LOG_ERR("AZURE_FOTA_EVT_ERROR");
 		fota_report_send(fota_evt);
 		evt.type = AZURE_IOT_HUB_EVT_FOTA_ERROR;
-		azure_iot_hub_notify_event(&evt);
 		break;
 	default:
 		LOG_ERR("Unhandled FOTA event, type: %d", fota_evt->type);
@@ -1088,7 +966,7 @@ int azure_iot_hub_ping(void)
 	return mqtt_live(&client);
 }
 
-int azure_iot_hub_keepalive_time_left(void)
+uint32_t azure_iot_hub_keepalive_time_left(void)
 {
 	return mqtt_keepalive_time_left(&client);
 }
@@ -1111,9 +989,9 @@ int azure_iot_hub_send(const struct azure_iot_hub_data *const tx_data)
 		.retain_flag = tx_data->retain_flag,
 	};
 
-	if (!connection_state_verify(STATE_CONNECTED)) {
-		LOG_WRN("Azure IoT Hub is not connected");
-		return -ENOTCONN;
+	if (connection_state != STATE_CONNECTED) {
+		LOG_ERR("Azure IoT Hub is not connected");
+		return -EACCES;
 	}
 
 	switch (tx_data->topic.type) {
@@ -1178,52 +1056,32 @@ int azure_iot_hub_disconnect(void)
 {
 	int err;
 
-	if (!connection_state_verify(STATE_CONNECTED)) {
-		LOG_WRN("Azure IoT Hub is not connected");
-		return -ENOTCONN;
+	if (connection_state != STATE_CONNECTED) {
+		LOG_ERR("Azure IoT Hub is not connected");
+		return -EACCES;
 	}
 
-	connection_state_set(STATE_DISCONNECTING);
+	connection_state = STATE_DISCONNECTING;
 
 	err = mqtt_disconnect(&client);
 	if (err) {
 		LOG_ERR("Failed to disconnect MQTT client, error: %d", err);
-		connection_state_set(STATE_INIT);
 		return err;
 	}
 
-	/* The MQTT library only propagates the MQTT_DISCONNECT event
-	 * if the call to mqtt_disconnect() is successful. In that case the
-	 * setting of STATE_INIT is carried out in the mqtt_evt_handler.
-	 */
+	connection_state = STATE_INIT;
 
 	return 0;
 }
 
 int azure_iot_hub_connect(void)
 {
-	int err;
-
-	if (connection_state_verify(STATE_CONNECTING)) {
-		LOG_WRN("Azure IoT Hub connection establishment in progress");
-		return -EINPROGRESS;
-	} else if (!connection_state_verify(STATE_INIT)) {
-		LOG_WRN("Azure IoT Hub is not in the initialized state");
-		return -ENOENT;
+	if (connection_state != STATE_INIT) {
+		LOG_ERR("Azure IoT Hub is not initialized");
+		return -EACCES;
 	}
 
-	connection_state_set(STATE_CONNECTING);
-
-	err = connect_client(&conn_config);
-	if (err) {
-		LOG_ERR("Failed to connect MQTT client, error: %d", err);
-		connection_state_set(STATE_INIT);
-		return err;
-	}
-
-	k_sem_give(&connection_poll_sem);
-
-	return 0;
+	return connect_client(&conn_config);
 }
 
 int azure_iot_hub_init(const struct azure_iot_hub_config *const config,
@@ -1231,8 +1089,8 @@ int azure_iot_hub_init(const struct azure_iot_hub_config *const config,
 {
 	int err;
 
-	if (!connection_state_verify(STATE_IDLE)) {
-		LOG_WRN("Azure IoT Hub is already initialized");
+	if (connection_state != STATE_IDLE) {
+		LOG_ERR("Azure IoT Hub is already initialized");
 		return -EALREADY;
 	}
 
@@ -1291,12 +1149,13 @@ int azure_iot_hub_init(const struct azure_iot_hub_config *const config,
 	is_initialized = true;
 	(void)err;
 
-	connection_state_set(STATE_INIT);
+	connection_state = STATE_INIT;
 
 	return 0;
 }
 
-int azure_iot_hub_method_respond(struct azure_iot_hub_result *result)
+int azure_iot_hub_method_respond(
+	struct azure_iot_hub_result *result)
 {
 	ssize_t len;
 	static char topic[100];
@@ -1306,9 +1165,9 @@ int azure_iot_hub_method_respond(struct azure_iot_hub_result *result)
 		.message.topic.topic.utf8 = topic,
 	};
 
-	if (!connection_state_verify(STATE_CONNECTED)) {
-		LOG_WRN("Azure IoT Hub is not connected");
-		return -ENOTCONN;
+	if (connection_state != STATE_CONNECTED) {
+		LOG_ERR("Azure IoT Hub is not connected");
+		return -EACCES;
 	}
 
 	len = snprintk(topic, sizeof(topic), TOPIC_DIRECT_METHOD_RES,
@@ -1338,11 +1197,11 @@ start:
 
 	while (true) {
 		ret = poll(fds, ARRAY_SIZE(fds),
-			   azure_iot_hub_keepalive_time_left());
-
-		/* If poll returns 0 the timeout has expired. */
+			mqtt_keepalive_time_left(&client));
 		if (ret == 0) {
-			azure_iot_hub_ping();
+			if (mqtt_keepalive_time_left(&client) < 1000) {
+				azure_iot_hub_ping();
+			}
 			continue;
 		}
 
@@ -1358,59 +1217,45 @@ start:
 			 * account for the event that it has changed.
 			 */
 			fds[0].fd = conn_config.socket;
-
-			if (connection_state_verify(STATE_INIT)) {
-				/* If connection state is set to STATE_INIT at
-				 * this point we know that the socket has
-				 * been closed and we can break out of poll.
-				 */
-				LOG_DBG("The socket is already closed");
-				break;
-			}
-
 			continue;
 		}
 
 		if (ret < 0) {
 			LOG_ERR("poll() returned an error: %d", -errno);
-			break;
+			goto start;
 		}
 
 		if ((fds[0].revents & POLLNVAL) == POLLNVAL) {
-			if (connection_state_verify(STATE_DISCONNECTING)) {
+			if (connection_state == STATE_DISCONNECTING) {
 				/* POLLNVAL is to be expected while
 				 * disconnecting, as the socket will be closed
 				 * by the MQTT library and become invalid.
 				 */
 				LOG_DBG("POLLNVAL while disconnecting");
-			} else if (connection_state_verify(STATE_INIT)) {
+				goto start;
+			} else if (connection_state == STATE_INIT) {
 				LOG_DBG("POLLNVAL, no active connection");
+				goto start;
 			} else {
 				LOG_DBG("Socket error: POLLNVAL");
 				LOG_DBG("The socket was unexpectedly closed");
 			}
 
-			break;
+			goto start;
 		}
 
 		if ((fds[0].revents & POLLHUP) == POLLHUP) {
 			LOG_DBG("Socket error: POLLHUP");
 			LOG_DBG("Connection was unexpectedly closed");
-			break;
+			goto start;
 		}
 
 		if ((fds[0].revents & POLLERR) == POLLERR) {
 			LOG_DBG("Socket error: POLLERR");
 			LOG_DBG("Connection was unexpectedly closed");
-			break;
+			goto start;
 		}
 	}
-
-	/* Always revert to the initialization state if the socket has been
-	 * closed.
-	 */
-	connection_state_set(STATE_INIT);
-	goto start;
 }
 
 K_THREAD_DEFINE(connection_poll_thread, CONFIG_AZURE_IOT_HUB_STACK_SIZE,

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 macro(add_region)
@@ -118,16 +118,8 @@ foreach (image ${PM_IMAGES})
   include(${shared_vars_file})
   list(APPEND prefixed_images ${DOMAIN}:${image})
   list(APPEND images ${image})
-  list(APPEND input_files  ${${image}_PM_YML_FILES})
+  list(APPEND input_files  ${${image}_ZEPHYR_BINARY_DIR}/${generated_path}/pm.yml)
   list(APPEND header_files ${${image}_ZEPHYR_BINARY_DIR}/${generated_path}/pm_config.h)
-
-  # Re-configure (Re-execute all CMakeLists.txt code) when original
-  # (not preprocessed) configuration file changes.
-  set_property(
-    DIRECTORY APPEND PROPERTY
-    CMAKE_CONFIGURE_DEPENDS
-    ${${image}_PM_YML_DEP_FILES}
-    )
 endforeach()
 
 # Explicitly add the dynamic partition image
@@ -305,12 +297,6 @@ foreach(container ${containers} ${merged})
     list(APPEND ${container}targets ${${part}_PM_TARGET})
   endforeach()
 
-  # Do not merge hex files for empty partitions
-  if(NOT ${container}hex_files)
-    list(REMOVE_ITEM PM_${MERGED}_SPAN ${container})
-    continue()
-  endif()
-
   # If overlapping is enabled, add the appropriate argument.
   if(${${container}_overlap})
     set(${container}overlap_arg --overlap=replace)
@@ -343,6 +329,25 @@ foreach(container ${containers} ${merged})
     )
 
 endforeach()
+
+# We need to tell the flash runner use 'merged.hex' instead of 'zephyr.hex'.
+# This is typically done by setting the 'hex_file' property of the
+# 'runners_yaml_props_target' target. However, since the CMakeLists.txt file
+# reading those properties has already run, and the 'hex_file' property
+# is not evaluated in a generator expression, it is too late at this point to
+# set that variable. Hence we must operate on the 'yaml_contents' property,
+# which is evaluated in a generator expression.
+
+get_target_property(runners_content runners_yaml_props_target yaml_contents)
+
+string(REGEX REPLACE "hex_file:[^\n]*"
+  "hex_file: ${PROJECT_BINARY_DIR}/${merged}.hex" new  ${runners_content})
+
+set_property(
+  TARGET         runners_yaml_props_target
+  PROPERTY       yaml_contents
+  ${new}
+  )
 
 if (CONFIG_SECURE_BOOT AND CONFIG_BOOTLOADER_MCUBOOT)
   # Create symbols for the offsets required for moving test update hex files
@@ -516,35 +521,3 @@ else()
     CACHE STRING "Path to merged image in Intel Hex format" FORCE)
 
 endif()
-
-# We need to tell the flash runner use the merged hex file instead of
-# 'zephyr.hex'This is typically done by setting the 'hex_file' property of the
-# 'runners_yaml_props_target' target. However, since the CMakeLists.txt file
-# reading those properties has already run, and the 'hex_file' property
-# is not evaluated in a generator expression, it is too late at this point to
-# set that variable. Hence we must operate on the 'yaml_contents' property,
-# which is evaluated in a generator expression.
-
-if (final_merged)
-  # Multiple domains are included in the build, point to the result of
-  # merging the merged hex file for all domains.
-  set(merged_hex_to_flash ${final_merged})
-  set_property(
-    TARGET zephyr_property_target
-    APPEND PROPERTY FLASH_DEPENDENCIES
-    ${final_merged}
-    )
-else()
-  set(merged_hex_to_flash ${PROJECT_BINARY_DIR}/${merged}.hex)
-endif()
-
-get_target_property(runners_content runners_yaml_props_target yaml_contents)
-
-string(REGEX REPLACE "hex_file:[^\n]*"
-  "hex_file: ${merged_hex_to_flash}" new  ${runners_content})
-
-set_property(
-  TARGET         runners_yaml_props_target
-  PROPERTY       yaml_contents
-  ${new}
-  )

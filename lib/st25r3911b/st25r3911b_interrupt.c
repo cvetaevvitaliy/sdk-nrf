@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <kernel.h>
@@ -117,7 +117,7 @@ int st25r3911b_irq_modify(uint32_t clr_mask, uint32_t set_mask)
 	int err = 0;
 	uint32_t mask;
 	uint32_t old_mask;
-	k_spinlock_key_t key;
+	struct k_spinlock_key key;
 
 	key = k_spin_lock(&spinlock);
 

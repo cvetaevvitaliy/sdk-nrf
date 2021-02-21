@@ -178,14 +178,15 @@ To test the vendor hook feature, you need a development kit that is programmed w
 Complete the following steps:
 
 1. Connect the Thread NCP development kit's SEGGER J-Link USB port to the USB port on your PC with an USB cable.
-#. Get the development kit's serial port name (for example, :file:`/dev/ttyACM0`).
-#. Open a shell and run PySpinel by using the following command, with *baudrate* set to ``1000000`` and *serial_port_name* set to the port name from the previous step:
+#. Get the board's serial port name (e.g. /dev/ttyACM0).
+#. Open a shell and run PySpinel by using the following command:
 
-   .. parsed-literal::
-      :class: highlight
+   .. code-block:: console
 
-      python3 spinel-cli.py -u *serial_port_name* -b *baudrate*
+      python3 spinel-cli.py -u <serial_port_name> -b <baudrate>
 
+   For ``baudrate``, use value 1000000.
+   For ``serial_port_name``, use the value from the previous step.
 #. In the PySpinel shell, run the following command to check the list of available vendor properties:
 
    .. code-block:: console
@@ -210,7 +211,7 @@ Complete the following steps:
 
    .. code-block:: console
 
-      Nordic Semiconductor
+      Nordic Seminconductor
       Done
 
 #. In the PySpinel shell, run the ``auto_ack`` command to get the current state of the device auto ACK mode:

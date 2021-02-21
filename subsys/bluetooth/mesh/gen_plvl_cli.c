@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <bluetooth/mesh/gen_plvl_cli.h>
 #include "model_utils.h"
@@ -126,25 +126,14 @@ static int bt_mesh_lvl_cli_init(struct bt_mesh_model *mod)
 	struct bt_mesh_plvl_cli *cli = mod->user_data;
 
 	cli->model = mod;
-	cli->pub.msg = &cli->pub_buf;
-	net_buf_simple_init_with_data(&cli->pub_buf, cli->pub_data,
-				      sizeof(cli->pub_data));
+	net_buf_simple_init(mod->pub->msg, 0);
 	model_ack_init(&cli->ack_ctx);
 
 	return 0;
 }
 
-static void bt_mesh_lvl_cli_reset(struct bt_mesh_model *mod)
-{
-	struct bt_mesh_plvl_cli *cli = mod->user_data;
-
-	net_buf_simple_reset(mod->pub->msg);
-	model_ack_reset(&cli->ack_ctx);
-}
-
 const struct bt_mesh_model_cb _bt_mesh_plvl_cli_cb = {
 	.init = bt_mesh_lvl_cli_init,
-	.reset = bt_mesh_lvl_cli_reset,
 };
 
 int bt_mesh_plvl_cli_power_get(struct bt_mesh_plvl_cli *cli,

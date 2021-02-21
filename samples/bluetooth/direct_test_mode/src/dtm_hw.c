@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include "nrf.h"
@@ -18,25 +18,7 @@ const uint32_t nrf_power_value[] = {
 	RADIO_TXPOWER_TXPOWER_Neg16dBm,
 	RADIO_TXPOWER_TXPOWER_Neg12dBm,
 	RADIO_TXPOWER_TXPOWER_Neg8dBm,
-#if defined(RADIO_TXPOWER_TXPOWER_Neg7dBm)
-	RADIO_TXPOWER_TXPOWER_Neg7dBm,
-#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg7dBm) */
-#if defined(RADIO_TXPOWER_TXPOWER_Neg6dBm)
-	RADIO_TXPOWER_TXPOWER_Neg6dBm,
-#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg6dBm) */
-#if defined(RADIO_TXPOWER_TXPOWER_Neg5dBm)
-	RADIO_TXPOWER_TXPOWER_Neg5dBm,
-#endif /* defined(RADIO_TXPOWER_TXPOWER_Neg5dBm) */
 	RADIO_TXPOWER_TXPOWER_Neg4dBm,
-#if defined(RADIO_TXPOWER_TXPOWER_Neg3dBm)
-	RADIO_TXPOWER_TXPOWER_Neg3dBm,
-#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg3dBm) */
-#if defined(RADIO_TXPOWER_TXPOWER_Neg2dBm)
-	RADIO_TXPOWER_TXPOWER_Neg2dBm,
-#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg2dBm) */
-#if defined(RADIO_TXPOWER_TXPOWER_Neg1dBm)
-	RADIO_TXPOWER_TXPOWER_Neg1dBm,
-#endif /* defined (RADIO_TXPOWER_TXPOWER_Neg1dBm) */
 	RADIO_TXPOWER_TXPOWER_0dBm,
 #if defined(RADIO_TXPOWER_TXPOWER_Pos2dBm)
 	RADIO_TXPOWER_TXPOWER_Pos2dBm,

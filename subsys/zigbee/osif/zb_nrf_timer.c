@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <drivers/counter.h>
@@ -12,7 +12,7 @@
 #include <zb_types.h>
 
 #define ALARM_CHANNEL_ID  0
-#define TIMER_INSTANCE    DT_LABEL(DT_NODELABEL(timer2))
+#define TIMER_INSTANCE    DT_LABEL(DT_NODELABEL(timer3))
 
 typedef struct {
 	const struct device *device;

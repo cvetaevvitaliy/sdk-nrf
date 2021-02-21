@@ -1,12 +1,10 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 cmake_minimum_required(VERSION 3.13.1)
-
-set(DTC_OVERLAY_FILE "dts.overlay")
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(NONE)

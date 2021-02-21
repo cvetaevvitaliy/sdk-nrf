@@ -1,11 +1,13 @@
 .. _bt_mesh:
 
-Bluetooth mesh profile
-######################
+Bluetooth Mesh Profile
+#######################
 
-The nRF Connect SDK has experimental support for the Bluetooth mesh specification through the Zephyr :ref:`zephyr:bluetooth_mesh` implementation.
+The nRF Connect SDK has experimental support for the Bluetooth Mesh
+Specification through the Zephyr :ref:`zephyr:bluetooth_mesh` implementation.
 
-Nordic Semiconductor additionally provides some modules to aid in the development of Bluetooth mesh-based applications:
+Nordic Semiconductor additionally provides some modules to aid in the
+development of Bluetooth Mesh-based applications:
 
 .. toctree::
    :maxdepth: 1

@@ -18,7 +18,7 @@ Support for production and deployment in end products is coming soon.
 Highlights
 **********
 
-* Qualified Zephyr Host to be conformant with Bluetooth Core Specification v5.2
+* Qualified the Bluetooth Host subsystem to be conformant with Bluetooth Core Specification v5.2
 * Updated Carrier Library to v0.10.1
 
 Release tag
@@ -97,7 +97,7 @@ This section contains changes in Zephyr that were cherry-picked into |NCS| for t
 Bluetooth Host
 ~~~~~~~~~~~~~~
 
-* Qualified Zephyr Host to be conformant with Bluetooth Core Specification v5.2.
+* Qualified the Bluetooth Host subsystem to be conformant with Bluetooth Core Specification v5.2.
   These changes were cherry-picked in the |NCS| v1.4.1 Bluetooth Host qualification update, which contains the following changes:
 
   * Added qualification for Bluetooth Core Specification v5.2.

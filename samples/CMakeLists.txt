@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 if (CONFIG_SPM)
@@ -35,15 +35,6 @@ if (CONFIG_SPM)
   endif()
 endif()
 
-if (CONFIG_BUILD_WITH_TFM AND CONFIG_UART_1_NRF_UARTE)
-  message(FATAL_ERROR "
-    Non-secure applications built with TF-M cannot use UART1, because this
-    instance is used by the TF-M secure application. Disable the uart1 node
-    in devicetree. See the following file:
-    nrf/samples/tfm/tfm_hello_world/boards/nrf9160dk_nrf9160ns.overlay
-    for an example how to do it.")
-endif()
-
 if (CONFIG_SECURE_BOOT)
   if (CONFIG_SOC_NRF5340_CPUNET)
     add_child_image(
@@ -56,36 +47,20 @@ if (CONFIG_SECURE_BOOT)
       SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/bootloader
       )
   endif()
-  if (CONFIG_SOC_NRF5340_CPUAPP AND CONFIG_BOOTLOADER_MCUBOOT)
-      add_overlay_config(
-        mcuboot
-        ${NRF_DIR}/subsys/bootloader/image/log_minimal.conf
-        )
-  endif()
 endif()
 
 # Special handling for the nRF53 when using RPMSG HCI.
-# Automatically include the multiprotocol_rpmsg as child image when both RPMSG HCI
-# and RPMSG 802.15.4 Serialization are enabled or the hci_rpmsg sample when
-# only RPMSG HCI is enabled. For any of these samples change the board to be the network core.
+# Automatically include the hci_rpmsg sample as child image, and change
+# the board to be the network core.
 if (CONFIG_BT_RPMSG_NRF53)
   if (CONFIG_SOC_NRF5340_CPUAPP)
 
-    if (CONFIG_NRF_802154_SER_HOST)
-      set(NETCORE_IMAGE "multiprotocol_rpmsg")
-      set(NETCORE_IMAGE_PATH "${NRF_DIR}/samples/nrf5340/${NETCORE_IMAGE}")
-      message("Adding 'multiprotocol_rpmsg' firmware as child image since "
-      "CONFIG_BT_RPMSG_NRF53 and CONFIG_NRF_802154_SER_HOST are set to 'y'")
-    else()
-      set(NETCORE_IMAGE "hci_rpmsg")
-      set(NETCORE_IMAGE_PATH "${ZEPHYR_BASE}/samples/bluetooth/${NETCORE_IMAGE}")
-      message("Adding 'hci_rpmsg' firmware as child image since "
+    message("Adding 'hci_rpmsg' sample as child image since "
       "CONFIG_BT_RPMSG_NRF53 is set to 'y'")
-    endif()
 
     if (CONFIG_BT_LL_SOFTDEVICE_DEFAULT)
       add_overlay_config(
-        ${NETCORE_IMAGE}
+        hci_rpmsg
         ${NRF_DIR}/subsys/bluetooth/controller/bt_ll_softdevice_hci_rpmsg.conf
         )
     endif()
@@ -94,7 +69,7 @@ if (CONFIG_BT_RPMSG_NRF53)
       # secure bootloader on the network core. This enables firmware update
       # of the network core application.
       add_overlay_config(
-        ${NETCORE_IMAGE}
+        hci_rpmsg
         "${ZEPHYR_NRF_MODULE_DIR}/subsys/bootloader/image/secure_boot.conf"
         )
 
@@ -108,33 +83,18 @@ if (CONFIG_BT_RPMSG_NRF53)
     endif()
 
     add_child_image(
-      NAME ${NETCORE_IMAGE}
-      SOURCE_DIR ${NETCORE_IMAGE_PATH}
+      NAME hci_rpmsg
+      SOURCE_DIR ${ZEPHYR_BASE}/samples/bluetooth/hci_rpmsg
       DOMAIN CPUNET
       BOARD ${CONFIG_DOMAIN_CPUNET_BOARD})
   else()
     message(FATAL_ERROR
       "SoC not supported for including hci_rpmsg as child image")
   endif()
-elseif (CONFIG_NRF_802154_SER_HOST)
-  if (CONFIG_SOC_NRF5340_CPUAPP)
-    message("Adding '802154_rpmsg' firmware as child image since "
-    "CONFIG_NRF_802154_SER_HOST is set to y")
-
-    add_child_image(
-      NAME 802154_rpmsg
-      SOURCE_DIR ${ZEPHYR_BASE}/samples/boards/nrf/ieee802154/802154_rpmsg
-      DOMAIN CPUNET
-      BOARD ${CONFIG_DOMAIN_CPUNET_BOARD}
-    )
-  else()
-    message(FATAL_ERROR
-      "Board ${BOARD} not supported for including '802154_rpmsg' as child image")
-  endif()
 endif()
 
 if (CONFIG_NCS_SAMPLE_EMPTY_APP_CORE_CHILD_IMAGE)
-  message("Adding 'empty_app_core' firmware as child image since "
+  message("Adding 'empty_app_core' sample as child image since "
     "CONFIG_NCS_SAMPLE_EMPTY_APP_CORE_CHILD_IMAGE is set to 'y'")
 
   add_child_image(

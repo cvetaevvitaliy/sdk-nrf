@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 menu "Asset tracker"
@@ -153,14 +153,7 @@ endif
 
 endmenu # Device
 
-menuconfig MOTION
-	bool "Enable motion sensing in Asset Tracker"
-	default y
-	help
-	  Enables motion sensing in asset tracker with real
-	  sensors or simulated ones.
-
-if MOTION
+menu "Motion"
 
 choice
 	prompt "Accelerometer device"
@@ -173,6 +166,7 @@ config ACCEL_USE_SIM
 	select SENSOR
 	select SENSOR_SIM
 	select SENSOR_SIM_TRIGGER
+	select SENSOR_SIM_STATIC_VALUES
 	help
 	  Use sensor simulator to generate accelerometer data for
 	  flip detection data sent to nRF Cloud.
@@ -226,7 +220,7 @@ config ACCEL_INVERTED
 	  Enable if the accelerometer is mounted with the top side facing
 	  down when the board itself is in normal position.
 
-endif # MOTION
+endmenu # Motion
 
 menu "Cloud"
 
@@ -276,21 +270,14 @@ config CLOUD_WAIT_DURATION
 
 config CLOUD_FOTA_APP
 	bool "Enable firmware over-the-air upgrades for application"
-	depends on AWS_FOTA || NRF_CLOUD_FOTA
+	depends on AWS_FOTA
 	depends on DFU_TARGET_MCUBOOT
 	default y
 
 config CLOUD_FOTA_MODEM
 	bool "Enable firmware over-the-air upgrades for modem"
-	depends on AWS_FOTA || NRF_CLOUD_FOTA
-	depends on DFU_TARGET_MODEM_DELTA
-	default y
-
-config CLOUD_FOTA_BOOT
-	bool "Enable firmware over-the-air upgrades for bootloader"
-	depends on AWS_FOTA || NRF_CLOUD_FOTA
-	depends on DFU_TARGET_MCUBOOT
-	depends on SECURE_BOOT
+	depends on AWS_FOTA
+	depends on DFU_TARGET_MODEM
 	default y
 
 config CLOUD_CONNECT_ERR_REBOOT_S
@@ -299,14 +286,7 @@ config CLOUD_CONNECT_ERR_REBOOT_S
 
 endmenu # Cloud
 
-menuconfig ENVIRONMENT_SENSORS
-	bool "Enable environment sensing in Asset Tracker"
-	default y
-	help
-	  Enables environment sensing in asset tracker with real
-	  sensors or simulated ones.
-
-if ENVIRONMENT_SENSORS
+menu "Environment sensors"
 
 config USE_BME680_BSEC
 	bool "Use Bosch BME680 BSEC lib"
@@ -392,7 +372,7 @@ config TEMP_DEV_NAME
 
 endif
 
-endif # ENVIRONMENT_SENSORS
+endmenu # Environment sensors
 
 menuconfig LIGHT_SENSOR
 	bool "Light sensor"

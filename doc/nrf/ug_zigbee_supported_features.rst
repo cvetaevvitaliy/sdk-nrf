@@ -18,10 +18,7 @@ The stack comes with the following features:
 * Devices, described in former Zigbee Home Automation and Light Link profiles.
 * Zigbee Green Power Proxy Basic.
 * Experimental support for ``ZB_ZCL_WWAH``.
-* Experimental support for Green Power Combo.
 
 See :ref:`nrfxlib:zboss` and pages in this user guide for more information.
 
 The |NCS|'s Zigbee protocol also supports :ref:`Zigbee firmware over-the-air updates <lib_zigbee_fota>`.
-
-For more information about Zigbee, visit the `Zigbee Alliance`_ page and read `Zigbee Specification`_.

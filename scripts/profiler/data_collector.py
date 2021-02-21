@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 
 from rtt_nordic_profiler_host import RttNordicProfilerHost
 import sys
@@ -40,3 +40,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

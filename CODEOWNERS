@@ -18,7 +18,6 @@
 
 # Applications
 /applications/asset_tracker/              @jhn-nordic @jtguggedal @rlubos
-/applications/asset_tracker_v2/           @simensrostad @jtguggedal @jhn-nordic @coderbyheart
 /applications/connectivity_bridge/        @jtguggedal @nordic-auko
 /applications/nrf_desktop/                @pdunaj
 /applications/serial_lte_modem/           @junqingzou @lats1980 @rlubos
@@ -31,14 +30,12 @@
 Kconfig*                                  @tejlmand
 # All doc related files
 /doc/CMakeLists.txt                       @carlescufi
-/doc/update_versions.cmake                @carlescufi
 /doc/scripts/                             @carlescufi
 /doc/static/                              @carlescufi
 /doc/themes/                              @carlescufi
 /doc/**/conf.py                           @carlescufi
 /doc/nrf/                                 @carlescufi
 /doc/versions.json                        @carlescufi
-/.known-issues/                           @carlescufi
 # All subfolders
 /drivers/                                 @anangl
 /drivers/bt_ll_softdevice/                @anangl @rugeGerritsen
@@ -60,33 +57,27 @@ Kconfig*                                  @tejlmand
 /lib/at_host/                             @rlubos
 /lib/at_notif/                            @pkchan
 /lib/agps/                                @jtguggedal @simensrostad
-/lib/nrf_modem_lib/                       @rlubos
-/lib/edge_impulse/                        @pdunaj
+/lib/bsdlib/                              @rlubos
 /lib/fprotect/                            @hakonfam
 /lib/flash_patch/                         @hakonfam
 /lib/lte_link_control/                    @jtguggedal
 /lib/modem_info/                          @rlubos
 /lib/modem_key_mgmt/                      @rlubos
 /lib/pdn_management/                      @rlubos
-/lib/multithreading_lock/                 @joerchan @hurricaneFromMoscow
+/lib/multithreading_lock/                 @joerchan @rugeGerritsen
 /lib/ram_pwrdn/                           @mariuszpos @MarekPorwisz
 /lib/fatal_error/                         @ioannisg
 /lib/sms/                                 @metc
 /lib/st25r3911b/                          @grochu
 /lib/supl/                                @rlubos @evenl
 /lib/date_time/                           @simensrostad
-/modules/                                 @tejlmand
-/modules/mcuboot/                         @nvlsianpu
 /samples/sensor/bh1749/                   @wlgrd
 /samples/bluetooth/                       @joerchan @lemrey @carlescufi
 /samples/bluetooth/mesh/                  @trond-snekvik @joerchan
 /samples/bootloader/                      @hakonfam @ioannisg
-/samples/connectedhomeip/                 @Damian-Nordic @kkasperczyk-no
 /samples/debug/ppi_trace/                 @nordic-krch @anangl
-/samples/ei_wrapper/                      @pdunaj
-/samples/ei_data_forwarder/               @pdunaj
 /samples/esb/                             @lemrey
-/samples/mpsl/                            @joerchan @hurricaneFromMoscow
+/samples/mpsl/                            @joerchan @rugeGerritsen
 /samples/nfc/                             @grochu
 /samples/nrf_rpc/                         @doki-nordic @KAGA164
 /samples/nrf5340/empty_app_core/          @doki-nordic
@@ -97,11 +88,10 @@ Kconfig*                                  @tejlmand
 /samples/profiler/                        @pdunaj @pizi-nordic
 /samples/peripheral/radio_test/           @kapi-no
 /samples/peripheral/lpuart/               @nordic-krch
-/samples/tfm/tfm_hello_world/             @oyvindronningstad
+/samples/usb/usb_uart_bridge/             @jhn-nordic @jtguggedal
 /samples/zigbee/                          @maciekfabia @mariuszpos
 /samples/CMakeLists.txt                   @tejlmand
 /samples/nrf5340/netboot/                 @hakonfam
-/samples/nrf5340/multiprotocol_rpmsg/     @hubertmis
 /scripts/                                 @mbolivar @tejlmand
 /scripts/hid_configurator/                @pdunaj
 /scripts/tools-versions-*.txt             @tejlmand @asle-nordic @grho @shanta-14
@@ -113,11 +103,10 @@ Kconfig*                                  @tejlmand
 /subsys/bootloader/                       @hakonfam @ioannisg
 /subsys/debug/                            @nordic-krch @anangl
 /subsys/dfu/                              @hakonfam @sigvartmh
-/subsys/mgmt/                             @hakonfam @sigvartmh
 /subsys/esb/                              @Raane @lemrey
 /subsys/event_manager/                    @pdunaj
 /subsys/fw_info/                          @hakonfam
-/subsys/mpsl/                             @joerchan @hurricaneFromMoscow
+/subsys/mpsl/                             @joerchan @rugeGerritsen
 /subsys/net/                              @rlubos
 /subsys/net/lib/azure_*                   @jtguggedal @simensrostad @coderbyheart
 /subsys/nfc/                              @grochu @anangl
@@ -128,10 +117,7 @@ Kconfig*                                  @tejlmand
 /subsys/shell/                            @nordic-krch
 /subsys/spm/                              @ioannisg
 /subsys/nonsecure/                        @ioannisg
-/modules/                                 @tejlmand
-/modules/tfm/                             @oyvindronningstad @ioannisg @hakonfam
 /subsys/zigbee/                           @maciekfabia @mariuszpos
 /tests/                                   @rakons
 /tests/subsys/zigbee/                     @rakons @maciekfabia @mariuszpos
-/tests/subsys/bluetooth/mesh/             @joerchan @trond-snekvik
 /zephyr/                                  @carlescufi

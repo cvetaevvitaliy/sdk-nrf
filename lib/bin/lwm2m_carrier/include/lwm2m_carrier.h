@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #ifndef LWM2M_CARRIER_H__
@@ -20,7 +20,7 @@ extern "C"
  * @defgroup lwm2m_carrier_event LWM2M carrier library events
  * @{
  */
-/** Modem library initialized. */
+/** BSD library initialized. */
 #define LWM2M_CARRIER_EVENT_BSDLIB_INIT   1
 /** Connecting to the LTE network. */
 #define LWM2M_CARRIER_EVENT_CONNECTING    2

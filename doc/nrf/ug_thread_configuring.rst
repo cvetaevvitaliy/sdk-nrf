@@ -53,12 +53,9 @@ Additional configuration options
 Depending on your configuration needs, you can also set the following options:
 
 * :option:`CONFIG_NET_SOCKETS` - This option enables API similar to BSD Sockets on top of the native Zephyr networking API.
-  This configuration is needed for managing networking protocols.
-* :option:`CONFIG_NET_SHELL` - This option enables Zephyr's :ref:`zephyr:net_shell`.
-  This configuration is needed for managing the network, based on Zephyr's IP stack, from the command line.
-* :option:`CONFIG_OPENTHREAD_SHELL` - This option enables OpenThread CLI (see `OpenThread CLI Reference`_).
+  This is needed for managing networking protocols.
+* :option:`CONFIG_NET_SHELL` - This option enables Zephyr's :ref:`zephyr:shell_api` if you need to access OpenThread CLI and use commands from `OpenThread CLI Reference`_.
 * :option:`CONFIG_COAP` - This option enables Zephyr's :ref:`zephyr:coap_sock_interface` support.
-* :option:`CONFIG_COAP_UTILS` - This option enables the :ref:`CoAP utils library <coap_utils_readme>`.
 * :option:`CONFIG_OPENTHREAD_COAP` - This option enables OpenThread's native CoAP API.
 
 You can also change the default values in menuconfig for the options listed in the following files:
@@ -77,21 +74,6 @@ Default configuration reference
     The default configuration for all :ref:`openthread_samples` is defined in :file:`nrf/samples/openthread/common/overlay-ot-defaults.conf`.
 
 For other optional configuration options, see the following sections.
-
-.. _ug_thread_configuring_eui64:
-
-IEEE 802.15.4 EUI-64 configuration
-==================================
-
-.. include:: /includes/ieee802154_eui64_conf.txt
-
-At the end of the configuration process, you can check the EUI-64 value using OpenThread CLI:
-
-.. code-block:: console
-
-   uart:~$ ot eui64
-   8877665544332211
-   Done
 
 .. _ug_thread_configuring_crypto:
 

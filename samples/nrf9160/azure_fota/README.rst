@@ -89,9 +89,9 @@ After programming the sample to your development kit, test it by performing the 
       *** Booting Zephyr OS build v2.3.0-rc1-ncs1-1453-gf41496cd30d5  ***
       Traces enabled
       Azure FOTA sample started
-      Initializing Modem library
+      Initializing BSDlib
       This may take a while if a modem firmware update is pending
-      Modem library initialized
+      BSDlib initialized
       Connecting to LTE network
       AZURE_IOT_HUB_EVT_CONNECTING
       AZURE_IOT_HUB_EVT_CONNECTED
@@ -109,7 +109,6 @@ After programming the sample to your development kit, test it by performing the 
 	{
 	    "firmware": {
 	        "fwVersion": "v0.0.0-dev",
-	        "jobId": "ca186d4b-4171-4209-a49d-700c35567d1d",
 	        "fwLocation": {
 	            "host": "my-storage-account.blob.core.windows.net",
 	            "path": "my-app-update.bin"
@@ -150,14 +149,15 @@ This sample uses the following |NCS| libraries:
 * :ref:`lib_azure_iot_hub`
 * :ref:`lte_lc_readme`
 
-It uses the following `sdk-nrfxlib`_ library:
+It uses the following `nrfxlib`_ libraries:
 
-* :ref:`nrfxlib:nrf_modem`
+* :ref:`nrfxlib:bsdlib`
 
-It uses the following Zephyr library:
+
+It uses the following Zephyr libraries:
 
 * :ref:`MQTT <zephyr:networking_api>`
 
-In addition, it uses the following sample:
+In addition, it uses the following |NCS| sample:
 
 * :ref:`secure_partition_manager`

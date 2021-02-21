@@ -1,41 +1,36 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <sys/printk.h>
 #include <drivers/clock_control.h>
 #include <drivers/clock_control/nrf_clock_control.h>
 
+#define DT_DRV_COMPAT nordic_nrf_clock
+
 static void clock_init(void)
 {
 	int err;
-	int res;
-	struct onoff_manager *clk_mgr;
-	struct onoff_client clk_cli;
+	const struct device *clock;
+	enum clock_control_status clock_status;
 
-	clk_mgr = z_nrf_clock_control_get_onoff(CLOCK_CONTROL_NRF_SUBSYS_HF);
-	if (!clk_mgr) {
-		printk("Unable to get the Clock manager\n");
+	clock = device_get_binding(DT_INST_LABEL(0));
+	if (!clock) {
+		printk("Unable to find clock device binding\n");
 		return;
 	}
 
-	sys_notify_init_spinwait(&clk_cli.notify);
-
-	err = onoff_request(clk_mgr, &clk_cli);
-	if (err < 0) {
-		printk("Clock request failed: %d\n", err);
-		return;
+	err = clock_control_on(clock, CLOCK_CONTROL_NRF_SUBSYS_HF);
+	if (err) {
+		printk("Unable to turn on the clock: %d", err);
 	}
 
 	do {
-		err = sys_notify_fetch_result(&clk_cli.notify, &res);
-		if (!err && res) {
-			printk("Clock could not be started: %d\n", res);
-			return;
-		}
-	} while (err);
+		clock_status = clock_control_get_status(clock,
+			CLOCK_CONTROL_NRF_SUBSYS_HF);
+	} while (clock_status != CLOCK_CONTROL_STATUS_ON);
 
 	printk("Clock has started\n");
 }

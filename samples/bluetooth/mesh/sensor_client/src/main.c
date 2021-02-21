@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /** @file
- *  @brief Nordic mesh sensor observer sample
+ *  @brief Nordic Mesh Sensor Client sample
  */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/mesh/models.h>

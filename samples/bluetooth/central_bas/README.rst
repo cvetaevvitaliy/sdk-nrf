@@ -22,13 +22,14 @@ If the device does not support notifications for the Battery Level Characteristi
 Requirements
 ************
 
-The sample supports the following development kits:
+* One of the following development boards:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp_and_cpuappns , nrf52840dk_nrf52840, nrf52840dk_nrf52811, nrf52833dk_nrf52833, nrf52833dk_nrf52820, nrf52dk_nrf52832, nrf52dk_nrf52810
+  * |nRF9160DK|
+  * |nRF5340DK|
+  * |nRF52840DK|
+  * |nRF52DK|
 
-The sample also requires a device running a BAS Server to connect with (for example, another development kit running the :ref:`peripheral_hids_mouse` or :ref:`peripheral_hids_keyboard` sample, or a Bluetooth Low Energy dongle and nRF Connect for Desktop)
+* A device running a BAS Server to connect with (for example, another board running the :ref:`peripheral_hids_mouse` or :ref:`peripheral_hids_keyboard` sample, or a Bluetooth Low Energy dongle and nRF Connect for Desktop)
 
 
 User interface
@@ -51,15 +52,15 @@ Building and running
 Testing
 =======
 
-After programming the sample to your development kit, you can test it either by connecting to another kit that is running the :ref:`peripheral_hids_keyboard` or :ref:`peripheral_hids_mouse` sample, or by using `nRF Connect for Desktop`_ that emulates a BAS Server.
+After programming the sample to your board, you can test it either by connecting to another board that is running the :ref:`peripheral_hids_keyboard` or :ref:`peripheral_hids_mouse` sample, or by using `nRF Connect for Desktop`_ that emulates a BAS Server.
 
 
-Testing with another kit
-------------------------
+Testing with another board
+--------------------------
 
 1. |connect_terminal_specific|
-#. Reset the kit.
-#. Program the other development kit with the :ref:`peripheral_hids_keyboard` or :ref:`peripheral_hids_mouse` sample and reset it.
+#. Reset the board.
+#. Program the other board with the :ref:`peripheral_hids_keyboard` or :ref:`peripheral_hids_mouse` sample and reset it.
 #. Wait until the BAS Server is detected by the central.
    In the terminal window, check for information similar to the following::
 
@@ -81,7 +82,7 @@ Testing with nRF Connect for Desktop
 ------------------------------------
 
 1. |connect_terminal_specific|
-#. Reset the kit.
+#. Reset the board.
 #. Start `nRF Connect for Desktop`_ and select the connected dongle that is used for communication.
 #. Go to the :guilabel:`Server setup` tab.
    Click the dongle configuration and select :guilabel:`Load setup`.
@@ -111,7 +112,7 @@ Testing with nRF Connect for Desktop
    #. Click :guilabel:`Apply` and :guilabel:`Close`.
 
 #. In the Adapter settings, choose :guilabel:`Start advertising`.
-#. Wait until the kit that runs the Central BAS sample connects.
+#. Wait until the board that runs the Central BAS sample connects.
    In the terminal window, check for information similar to the following::
 
       The discovery procedure succeeded

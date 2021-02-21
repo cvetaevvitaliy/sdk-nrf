@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <string.h>
 #include <stdio.h>
@@ -167,7 +167,7 @@ static int64_t div_scalar(int64_t val, const struct scalar_repr *repr)
 	       (val / repr->value);
 }
 
-static int64_t scalar_max(const struct bt_mesh_sensor_format *format)
+static uint32_t scalar_max(const struct bt_mesh_sensor_format *format)
 {
 	const struct scalar_repr *repr = format->user_data;
 
@@ -179,7 +179,7 @@ static int64_t scalar_max(const struct bt_mesh_sensor_format *format)
 		return BIT64(8 * format->size - 1) - 1;
 	}
 
-	int64_t max_value = BIT64(8 * format->size) - 1;
+	uint32_t max_value = BIT64(8 * format->size) - 1;
 
 	if (repr->flags & (HAS_HIGHER_THAN | HAS_INVALID)) {
 		max_value -= 2;
@@ -214,7 +214,7 @@ static int scalar_encode(const struct bt_mesh_sensor_format *format,
 	int64_t raw = div_scalar(val->val1, repr) +
 		    div_scalar(val->val2, repr) / 1000000LL;
 
-	int64_t max_value = scalar_max(format);
+	uint32_t max_value = scalar_max(format);
 	int32_t min_value = scalar_min(format);
 
 	if (raw > max_value || raw < min_value) {
@@ -289,7 +289,7 @@ static int scalar_decode(const struct bt_mesh_sensor_format *format,
 		return -ERANGE;
 	}
 
-	int64_t max_value = scalar_max(format);
+	uint32_t max_value = scalar_max(format);
 	int32_t min_value = scalar_min(format);
 
 	if (raw < min_value || raw > max_value) {
@@ -342,9 +342,8 @@ static int exp_1_1_encode(const struct bt_mesh_sensor_format *format,
 		return -ENOMEM;
 	}
 
-	net_buf_simple_add_u8(buf,
-			      sensor_powtime_encode((val->val1 * 1000ULL) +
-						    (val->val2 / 1000ULL)));
+	net_buf_simple_add_u8(buf, sensor_powtime_encode((val->val1 * 1000) +
+							 (val->val2 / 1000)));
 	return 0;
 }
 
@@ -355,11 +354,10 @@ static int exp_1_1_decode(const struct bt_mesh_sensor_format *format,
 		return -ENOMEM;
 	}
 
-	uint64_t time_us =
-		sensor_powtime_decode_us(net_buf_simple_pull_u8(buf));
+	uint64_t time_ns = sensor_powtime_decode_ns(net_buf_simple_pull_u8(buf));
 
-	val->val1 = time_us / USEC_PER_SEC;
-	val->val2 = time_us % USEC_PER_SEC;
+	val->val1 = time_ns / 1000000L;
+	val->val2 = time_ns % 1000000L;
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #ifndef DATE_TIME_H__
@@ -9,7 +9,6 @@
 
 #include <zephyr/types.h>
 #include <time.h>
-#include <stdbool.h>
 
 /**
  * @defgroup date_time Date Time Library
@@ -86,19 +85,6 @@ int date_time_uptime_to_unix_time_ms(int64_t *uptime);
  *  @return -ENODATA If the library does not have a valid date time UTC.
  */
 int date_time_now(int64_t *unix_time_ms);
-
-/** @brief Convenience function that checks if the library has obtained
- *	   an initial valid date time.
- *
- *  @note If this function returns false there is no point of
- *	  subsequent calls to other functions in this API that
- *	  depend on the validity of the internal date time. We
- *	  know that they would fail beforehand.
- *
- *  @return true  The library has obtained an initial date time.
- *  @return false The library has not obtained an initial date time.
- */
-bool date_time_is_valid(void);
 
 /** @brief Register an event handler for Date time library events.
  *

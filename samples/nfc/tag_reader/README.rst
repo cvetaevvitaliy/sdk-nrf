@@ -28,13 +28,12 @@ Supported tag types:
 Requirements
 ************
 
-The sample supports the following development kits:
+* One of the following development boards:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp, nrf52840dk_nrf52840, nrf52dk_nrf52832, nrf52833dk_nrf52833
-
-The sample has the following additional requirements:
+  * |nRF5340DK|
+  * |nRF52840DK|
+  * |nRF52DK|
+  * |nRF52833DK|
 
 * NFC Reader ST25R3911B Nucleo expansion board (X-NUCLEO-NFC05A1)
 * NFC Type 2 Tag or Type 4 Tag
@@ -47,11 +46,11 @@ Building and running
 
 Testing
 =======
-After programming the sample to your development kit, you can test it with an NFC-A Type 2 Tag or Tag 4 Type.
+After programming the sample to your board, you can test it with an NFC-A Type 2 Tag or Tag 4 Type.
 
-1. Connect the Nucleo expansion board to the development kit.
+1. Connect the Nucleo expansion board to the development kit board.
 #. |connect_terminal|
-#. Reset the kit.
+#. Reset the board.
 #. Touch the ST25R3911B NFC reader with a Type 2 Tag or Type 4 Tag.
 #. Observe the output in the terminal.
    The content of the tag is printed there.

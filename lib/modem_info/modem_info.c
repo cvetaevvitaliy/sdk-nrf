@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <modem/at_cmd_parser.h>
@@ -530,8 +530,8 @@ parse:
 			LOG_ERR("Unable to obtain short: %d", err);
 			return err;
 		}
-		len = snprintf(buf, buf_size, "%d", param_value);
-		if ((len <= 0) || (len > buf_size)) {
+		err = snprintf(buf, buf_size, "%d", param_value);
+		if ((err <= 0) || (err > buf_size)) {
 			return -EMSGSIZE;
 		}
 	} else if (modem_data[info]->data_type == AT_PARAM_TYPE_STRING) {

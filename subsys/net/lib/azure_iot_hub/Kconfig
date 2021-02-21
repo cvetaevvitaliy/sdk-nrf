@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2020 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 menuconfig AZURE_IOT_HUB
@@ -33,6 +33,10 @@ config AZURE_IOT_HUB_SEC_TAG
 config AZURE_IOT_HUB_PORT
 	int "Azure IoT Hub port"
 	default 8883
+
+config AZURE_IOT_HUB_TLS_SESSION_CACHING
+	bool "Enable TLS session caching"
+	default y
 
 config AZURE_IOT_HUB_MQTT_RX_TX_BUFFER_LEN
 	int "Buffer sizes for the MQTT library"
@@ -94,14 +98,6 @@ config AZURE_IOT_HUB_PROPERTY_BAG_MAX_COUNT
 	  The maximum number of property bags that can be parsed from a topic.
 	  Increasing this value will increase stack usage when parsing topics,
 	  and vice versa if decreasing it.
-
-config AZURE_IOT_HUB_TOPIC_PROPERTY_BAG_PREFIX
-	bool "Include the '?' prefix before the property bag key/value"
-	default y
-	help
-	  This option adds a '?' before the property bag value for the event
-	  topics. Example
-	  devices/{device_id}/messages/events/?{property_bag}.
 
 config AZURE_IOT_HUB_DPS
 	bool "Use Device Provisioning Service"

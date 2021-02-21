@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <errno.h>
@@ -72,7 +72,6 @@ static void reschedule_next_timeslot(void)
 static mpsl_timeslot_signal_return_param_t *
 timeslot_callback(mpsl_timeslot_session_id_t session_id, uint32_t signal)
 {
-	int rc;
 	__ASSERT_NO_MSG(session_id == _context.session_id);
 
 	if (atomic_get(&_context.timeout_occured)) {
@@ -81,9 +80,9 @@ timeslot_callback(mpsl_timeslot_session_id_t session_id, uint32_t signal)
 
 	switch (signal) {
 	case MPSL_TIMESLOT_SIGNAL_START:
-		rc = _context.op_desc->handler(_context.op_desc->context);
-		if (rc != FLASH_OP_ONGOING) {
-			_context.status = (rc == FLASH_OP_DONE) ? 0 : rc;
+		if (_context.op_desc->handler(_context.op_desc->context) ==
+		    FLASH_OP_DONE) {
+			_context.status = 0;
 			_context.return_param.callback_action =
 				MPSL_TIMESLOT_SIGNAL_ACTION_END;
 		} else {

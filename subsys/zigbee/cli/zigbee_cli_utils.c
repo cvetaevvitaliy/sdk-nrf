@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <stdio.h>
@@ -11,15 +11,12 @@
 #include <shell/shell.h>
 
 #include <zboss_api.h>
-#include <zigbee/zigbee_error_handler.h>
-#include <zigbee/zigbee_logger_eprxzcl.h>
+#include <zb_error_handler.h>
+#include <zigbee_logger_eprxzcl.h>
 #include "zigbee_cli_utils.h"
 
-zb_uint8_t cli_agent_ep_handler_ping(zb_bufid_t bufid);
 
-static zb_device_handler_t zb_ep_handlers[] = {
-	cli_agent_ep_handler_ping
-};
+static zb_device_handler_t zb_ep_handlers[] = {};
 
 zb_uint8_t zb_cli_ep_handler(zb_bufid_t bufid)
 {

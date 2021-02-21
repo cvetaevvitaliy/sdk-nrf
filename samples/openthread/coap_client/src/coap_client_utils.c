@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -110,11 +110,8 @@ static int on_provisioning_reply(const struct coap_packet *response,
 
 	payload = coap_packet_get_payload(response, &payload_size);
 
-	if (payload == NULL ||
-	    payload_size != sizeof(unique_local_addr.sin6_addr)) {
-		LOG_ERR("Received data is invalid");
-		ret = -EINVAL;
-		goto exit;
+	if (payload_size != sizeof(unique_local_addr.sin6_addr)) {
+		LOG_ERR("Received data size is invalid");
 	}
 
 	memcpy(&unique_local_addr.sin6_addr, payload, payload_size);
@@ -189,17 +186,11 @@ static void send_provisioning_request(struct k_work *item)
 static void toggle_minimal_sleepy_end_device(struct k_work *item)
 {
 	otError error;
-	otLinkModeConfig mode;
-	struct openthread_context *context = openthread_get_default_context();
+	struct otInstance *instance = openthread_get_default_instance();
+	otLinkModeConfig mode = otThreadGetLinkMode(instance);
 
-	__ASSERT_NO_MSG(context != NULL);
-
-	openthread_api_mutex_lock(context);
-	mode = otThreadGetLinkMode(context->instance);
 	mode.mRxOnWhenIdle = !mode.mRxOnWhenIdle;
-	error = otThreadSetLinkMode(context->instance, mode);
-	openthread_api_mutex_unlock(context);
-
+	error = otThreadSetLinkMode(instance, mode);
 	if (error != OT_ERROR_NONE) {
 		LOG_ERR("Failed to set MLE link mode configuration");
 	} else {

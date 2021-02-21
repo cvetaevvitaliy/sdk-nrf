@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <drivers/entropy.h>
@@ -14,8 +14,6 @@
 #include <sdc_soc.h>
 
 #include <multithreading_lock.h>
-
-#define DT_DRV_COMPAT	nordic_nrf_rng
 
 /* The RNG driver data. */
 struct rng_driver_data {
@@ -127,7 +125,7 @@ static const struct entropy_driver_api rng_driver_api_funcs = {
 	.get_entropy_isr = rng_driver_get_entropy_isr
 };
 
-DEVICE_DT_INST_DEFINE(0, rng_driver_init, device_pm_control_nop,
-		      &rng_data, NULL,
-		      PRE_KERNEL_1, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
-		      &rng_driver_api_funcs);
+DEVICE_AND_API_INIT(rng_driver, DT_LABEL(DT_NODELABEL(rng)),
+		    rng_driver_init, &rng_data, NULL,
+		    PRE_KERNEL_1, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
+		    &rng_driver_api_funcs);

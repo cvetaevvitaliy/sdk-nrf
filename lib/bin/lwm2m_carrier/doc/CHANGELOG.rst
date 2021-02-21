@@ -25,6 +25,7 @@ Changes
 * :c:macro:`LWM2M_CARRIER_EVENT_LTE_READY` will be sent to the application even when the device is outside of AT&T and Verizon networks.
 * The interval to check for sufficient battery charge during FOTA has been reduced from five minutes to one minute.
 
+
 liblwm2m_carrier 0.10.1
 ***********************
 
@@ -202,7 +203,7 @@ Changes
 =======
 
 * Numerous stability fixes and improvements.
-* Updated Modem library version dependency.
+* Updated bsdlib version dependency.
 * Fixed an issue where high LTE network activity could prevent modem firmware updates over LwM2M.
 
 * Added the following library events:

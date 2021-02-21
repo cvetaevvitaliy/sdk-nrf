@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /** @file
@@ -13,13 +13,14 @@
 #include <stdio.h>
 
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/services/gadgets_profile.h>
 #include <bluetooth/gatt.h>
 #include <dk_buttons_and_leds.h>
 #include <settings/settings.h>
 
-#ifndef CONFIG_BT_ALEXA_GADGETS_CAPABILITY_CUSTOM_NAMESPACE
-#define CONFIG_BT_ALEXA_GADGETS_CAPABILITY_CUSTOM_NAMESPACE ""
+#include "gadgets_profile.h"
+
+#ifndef CONFIG_GADGETS_CAPABILITY_CUSTOM_NAMESPACE
+#define CONFIG_GADGETS_CAPABILITY_CUSTOM_NAMESPACE ""
 #endif
 
 #define BLE_CON_STATUS_LED DK_LED1
@@ -39,34 +40,6 @@ static bool color_cycler_led_on;
 static struct bt_conn *current_conn;
 
 static void color_cycler_event_send(void);
-
-static void exchange_func(struct bt_conn *conn, uint8_t err,
-			  struct bt_gatt_exchange_params *params)
-{
-	if (err) {
-		printk("MTU exchange error: %d\n", err);
-	} else {
-		bt_gadgets_profile_mtu_exchanged(conn);
-	}
-}
-
-static struct bt_gatt_exchange_params exchange_params = {
-	.func = exchange_func,
-};
-
-static void pairing_confirm(struct bt_conn *conn)
-{
-	int err;
-
-	err = bt_conn_auth_pairing_confirm(conn);
-	if (err) {
-		printk("bt_conn_auth_pairing_confirm: %d\n", err);
-	}
-}
-
-static struct bt_conn_auth_cb conn_auth_callbacks = {
-	.pairing_confirm = pairing_confirm,
-};
 
 static void connected(struct bt_conn *conn, uint8_t err)
 {
@@ -101,21 +74,9 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
 	}
 }
 
-static void security_changed(struct bt_conn *conn, bt_security_t level,
-			     enum bt_security_err err)
-{
-	int mtu_err;
-
-	mtu_err = bt_gatt_exchange_mtu(conn, &exchange_params);
-	if (mtu_err) {
-		printk("bt_gatt_exchange_mtu: %d\n", mtu_err);
-	}
-}
-
 static struct bt_conn_cb conn_callbacks = {
 	.connected = connected,
 	.disconnected = disconnected,
-	.security_changed = security_changed,
 };
 
 void button_changed(uint32_t button_state, uint32_t has_changed)
@@ -170,9 +131,7 @@ static void color_cycler_event_send(void)
 		return;
 	}
 
-	err = bt_gadgets_profile_custom_event_json_send(
-			"ReportColor",
-			json_msg);
+	err = gadgets_profile_custom_event_json_send("ReportColor", json_msg);
 	if (err) {
 		printk("Failed to send color event\n");
 		return;
@@ -198,12 +157,6 @@ static void color_cycler_directive_handler(
 	 * until the "StopLED" message is received,
 	 * or the user presses any of the buttons.
 	 */
-
-	if (strcmp(
-			CONFIG_BT_ALEXA_GADGETS_CAPABILITY_CUSTOM_NAMESPACE,
-			"Custom.ColorCyclerGadget") != 0) {
-		return;
-	}
 
 	if (strcmp(name, "StopLED") == 0) {
 		color_cycler_active = false;
@@ -244,7 +197,7 @@ static void color_cycler_directive_handler(
 		K_MSEC(interval));
 }
 
-#if CONFIG_BT_ALEXA_GADGETS_CAPABILITY_STATELISTENER
+#if CONFIG_GADGETS_CAPABILITY_STATELISTENER_ENABLE
 static void stateupdate_directive_handler(const char *name, const char *val)
 {
 	if (strcmp(name, "wakeword") == 0 && strcmp(val, "active") == 0) {
@@ -253,9 +206,9 @@ static void stateupdate_directive_handler(const char *name, const char *val)
 		dk_set_led_off(WAKEWORD_STATUS_LED);
 	}
 }
-#endif /* CONFIG_BT_ALEXA_GADGETS_CAPABILITY_STATELISTENER */
+#endif /* CONFIG_GADGETS_CAPABILITY_STATELISTENER_ENABLE */
 
-static void gadgets_handler(const struct bt_gadgets_evt *evt)
+static void gadgets_handler(const struct gadgets_evt *evt)
 {
 	__ASSERT_NO_MSG(evt != NULL);
 
@@ -270,26 +223,26 @@ static void gadgets_handler(const struct bt_gadgets_evt *evt)
 	 */
 
 	switch (evt->type) {
-	case BT_GADGETS_EVT_READY:
-		printk("BT_GADGETS_EVT_READY\n");
+	case GADGETS_EVT_READY:
+		printk("GADGETS_EVT_READY\n");
 		dk_set_led_on(GADGET_CON_STATUS_LED);
 		break;
-	case BT_GADGETS_EVT_SETALERT:
-		printk("BT_GADGETS_EVT_SETALERT\n");
+	case GADGETS_EVT_SETALERT:
+		printk("GADGETS_EVT_SETALERT\n");
 		break;
-	case BT_GADGETS_EVT_DELETEALERT:
-		printk("BT_GADGETS_EVT_DELETEALERT\n");
+	case GADGETS_EVT_DELETEALERT:
+		printk("GADGETS_EVT_DELETEALERT\n");
 		break;
-	case BT_GADGETS_EVT_SETINDICATOR:
-		printk("BT_GADGETS_EVT_SETINDICATOR\n");
+	case GADGETS_EVT_SETINDICATOR:
+		printk("GADGETS_EVT_SETINDICATOR\n");
 		break;
-	case BT_GADGETS_EVT_CLEARINDICATOR:
-		printk("BT_GADGETS_EVT_CLEARINDICATOR\n");
+	case GADGETS_EVT_CLEARINDICATOR:
+		printk("GADGETS_EVT_CLEARINDICATOR\n");
 		break;
-	case BT_GADGETS_EVT_STATEUPDATE:
-		printk("BT_GADGETS_EVT_STATEUPDATE\n");
+	case GADGETS_EVT_STATEUPDATE:
+		printk("GADGETS_EVT_STATEUPDATE\n");
 		/* "StateUpdate" directive */
-#if CONFIG_BT_ALEXA_GADGETS_CAPABILITY_STATELISTENER
+#if CONFIG_GADGETS_CAPABILITY_STATELISTENER_ENABLE
 		/* Set/clear LED upon wakeword state changes */
 		__ASSERT_NO_MSG(evt->parameters.state_update != NULL);
 
@@ -298,28 +251,31 @@ static void gadgets_handler(const struct bt_gadgets_evt *evt)
 				evt->parameters.state_update->states[i].name,
 				evt->parameters.state_update->states[i].value);
 		}
-#endif /* CONFIG_BT_ALEXA_GADGETS_CAPABILITY_STATELISTENER */
+#endif /* CONFIG_GADGETS_CAPABILITY_STATELISTENER_ENABLE */
 		break;
-	case BT_GADGETS_EVT_SPEECHMARKS:
-		printk("BT_GADGETS_EVT_SPEECHMARKS\n");
+	case GADGETS_EVT_SPEECHMARKS:
+		printk("GADGETS_EVT_SPEECHMARKS\n");
 		break;
-	case BT_GADGETS_EVT_MUSICTEMPO:
-		printk("BT_GADGETS_EVT_MUSICTEMPO\n");
+	case GADGETS_EVT_MUSICTEMPO:
+		printk("GADGETS_EVT_MUSICTEMPO\n");
 		break;
-	case BT_GADGETS_EVT_CUSTOM:
-		printk("BT_GADGETS_EVT_CUSTOM\n");
-		if (IS_ENABLED(CONFIG_BT_ALEXA_GADGETS_CAPABILITY_CUSTOM)) {
+	case GADGETS_EVT_CUSTOM:
+		printk("GADGETS_EVT_CUSTOM\n");
+		if (IS_ENABLED(CONFIG_GADGETS_CAPABILITY_CUSTOM_ENABLE)) {
 			/* Custom directive */
 
-			color_cycler_directive_handler(
-				evt->parameters.custom_directive.name,
-				evt->parameters.custom_directive.payload,
-				evt->parameters.custom_directive.size);
+			if (strcmp(CONFIG_GADGETS_CAPABILITY_CUSTOM_NAMESPACE,
+				   "Custom.ColorCyclerGadget") == 0) {
+				color_cycler_directive_handler(
+					evt->parameters.custom_directive.name,
+					evt->parameters.custom_directive.payload,
+					evt->parameters.custom_directive.size);
+			}
 		}
 		break;
 
-	case BT_GADGETS_EVT_CUSTOM_SENT:
-		printk("BT_GADGETS_EVT_CUSTOM_SENT\n");
+	case GADGETS_EVT_CUSTOM_SENT:
+		printk("GADGETS_EVT_CUSTOM_SENT\n");
 		break;
 	default:
 		printk("Unexpected event: %d\n", evt->type);
@@ -359,7 +315,6 @@ void main(void)
 	uint32_t buttons = dk_get_buttons();
 
 	bt_conn_cb_register(&conn_callbacks);
-	bt_conn_auth_cb_register(&conn_auth_callbacks);
 
 	err = bt_enable(NULL);
 	if (err) {
@@ -374,7 +329,7 @@ void main(void)
 		}
 	}
 
-	err = bt_gadgets_profile_init(gadgets_handler);
+	err = gadgets_profile_init(gadgets_handler);
 	if (err) {
 		printk("gadgets_profile_init: %d\n", err);
 		return;
@@ -399,7 +354,7 @@ void main(void)
 		       " while resetting/power cycling to erase bond.\n");
 	}
 
-	err = bt_gadgets_profile_adv_start(peer_count > 0 ? false : true);
+	err = gadgets_profile_adv_start(peer_count > 0 ? false : true);
 	if (err) {
 		printk("gadgets_profile_adv_start: %d\n", err);
 		return;

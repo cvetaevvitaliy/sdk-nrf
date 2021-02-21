@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 config FPROTECT
@@ -11,26 +11,9 @@ config FPROTECT
 	  Use hardware peripherals (BPROT, ACL, or SPU) to write-protect
 	  regions of flash until next reset.
 
+
 if !ARM
 config NRF_SPU_FLASH_REGION_SIZE
-	hex
-	default 0x1000
-	help
-	  Redefinition for the benefit of qemu_x86
-
-config NRF_MPU_FLASH_REGION_SIZE
-	hex
-	default 0x1000
-	help
-	  Redefinition for the benefit of qemu_x86
-
-config NRF_BPROT_FLASH_REGION_SIZE
-	hex
-	default 0x1000
-	help
-	  Redefinition for the benefit of qemu_x86
-
-config NRF_ACL_FLASH_REGION_SIZE
 	hex
 	default 0x1000
 	help
@@ -43,10 +26,7 @@ DT_CHOSEN_ZEPHYR_FLASH := $(dt_chosen_path,$(DT_ZEPHYR_FLASH))
 
 config FPROTECT_BLOCK_SIZE
 	hex
-	default NRF_SPU_FLASH_REGION_SIZE if CPU_HAS_NRF_IDAU
-	default NRF_MPU_FLASH_REGION_SIZE if HAS_HW_NRF_MPU
-	default NRF_BPROT_FLASH_REGION_SIZE if HAS_HW_NRF_BPROT
-	default NRF_ACL_FLASH_REGION_SIZE if HAS_HW_NRF_ACL
+	default NRF_SPU_FLASH_REGION_SIZE if SOC_NRF9160 || SOC_NRF5340_CPUAPP
 	default $(dt_node_int_prop_hex,$(DT_CHOSEN_ZEPHYR_FLASH),erase-block-size)
 	help
 	  Block size of fprotect

@@ -1,5 +1,5 @@
 # Copyright (c) 2019 Nordic Semiconductor ASA
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 
 # Builds combined documentation for all documentation sets: nRF (including
 # Doxygen documentation), Zephyr, MCUboot, etc.
@@ -75,9 +75,6 @@ set(KCONFIG_BINARY_DIR ${CMAKE_BINARY_DIR}/Kconfig)
 set(HTML_DIR ${CMAKE_BINARY_DIR}/html)
 file(MAKE_DIRECTORY ${HTML_DIR})
 
-# Known issues script
-set(KI_SCRIPT ${ZEPHYR_BASE}/scripts/filter-known-issues.py)
-
 #
 # Add the 'zephyr' target for building the Zephyr documentation. We reuse
 # doc/CMakeLists.txt from the Zephyr repository, but use our own Sphinx
@@ -91,10 +88,8 @@ set(KI_SCRIPT ${ZEPHYR_BASE}/scripts/filter-known-issues.py)
 set(SPHINXOPTS -c ${NRF_BASE}/doc/zephyr)
 set(SPHINX_OUTPUT_DIR ${HTML_DIR}/zephyr)
 set(KCONFIG_OUTPUT ${HTML_DIR}/kconfig)
-set(GEN_DEVICETREE_REST_ZEPHYR_DOCSET " ")
 
 # Get access to the 'html' target from doc/CMakeLists.txt in Zephyr
-set(MODULES_EXT_ROOT ${NRF_BASE})
 add_subdirectory(${ZEPHYR_BASE}/doc ${ZEPHYR_BINARY_DIR})
 
 add_custom_target(zephyr)
@@ -137,43 +132,46 @@ set(NRF_DOC_LOG ${NRF_BINARY_DIR}/doc.log)
 set(NRF_DOXY_LOG ${NRF_BINARY_DIR}/doxy.log)
 set(NRF_SPHINX_LOG ${NRF_BINARY_DIR}/sphinx.log)
 set(NRF_CONTENT_OUTPUTS ${NRF_BINARY_DIR}/extracted-content.txt)
-set(NRF_DOC_WARN ${NRF_BINARY_DIR}/doc.warnings)
-set(NRF_KI_DIR ${NRF_BASE}/.known-issues/doc)
 
 configure_file(${NRF_DOXYFILE_IN} ${NRF_DOXYFILE_OUT} @ONLY)
 
-set(tools_version_files
-    ${NRF_BASE}/scripts/tools-versions-minimum.txt
-    ${NRF_BASE}/scripts/tools-versions-darwin.txt
-    ${NRF_BASE}/scripts/tools-versions-win10.txt
-    ${NRF_BASE}/scripts/tools-versions-linux.txt
-)
+file(STRINGS ${NRF_BASE}/scripts/tools-versions-minimum.txt MINIMUM_VERSIONS_ALL REGEX "^[a-zA-Z0-9_-]*=.*")
+file(STRINGS ${NRF_BASE}/scripts/tools-versions-darwin.txt DARWIN_VERSIONS_ALL REGEX "^[a-zA-Z0-9_-]*=.*")
+file(STRINGS ${NRF_BASE}/scripts/tools-versions-win10.txt WIN10_VERSIONS_ALL REGEX "^[a-zA-Z0-9_-]*=.*")
+file(STRINGS ${NRF_BASE}/scripts/tools-versions-linux.txt LINUX_VERSIONS_ALL REGEX "^[a-zA-Z0-9_-]*=.*")
 
-set(pip_requirements_files
-    ${ZEPHYR_BASE}/scripts/requirements-base.txt
-    ${ZEPHYR_BASE}/scripts/requirements-doc.txt
-    ${MCUBOOT_BASE}/scripts/requirements.txt
-    ${NRF_BASE}/scripts/requirements-base.txt
-    ${NRF_BASE}/scripts/requirements-doc.txt
-    ${NRF_BASE}/scripts/requirements-build.txt
-)
+foreach(os MINIMUM DARWIN WIN10 LINUX)
+  foreach(program ${${os}_VERSIONS_ALL})
+    string(REGEX REPLACE "(^[^=]*)=([^\;]*)\;*.*" "\\1" program_name "${program}")
+    string(TOUPPER ${program_name} PROGRAM_NAME_UPPER)
+    set(${PROGRAM_NAME_UPPER}_VERSION_${os} ${CMAKE_MATCH_2})
+  endforeach()
+endforeach()
 
-string(REPLACE ";" "\\;" tools_files_escaped "${tools_version_files}")
-string(REPLACE ";" "\\;" pip_files_escaped "${pip_requirements_files}")
+# Loading Zephyr requirements-base.txt first, then mcuboot, and afterwards NCS
+# specific ensures that any packages present in multiple files will present the
+# version defined by NCS.
+file(STRINGS ${ZEPHYR_BASE}/scripts/requirements-base.txt ZEPHYR_BASE_PACKAGE_VERSIONS REGEX "^[^#].*")
+file(STRINGS ${ZEPHYR_BASE}/scripts/requirements-doc.txt ZEPHYR_DOCS_PACKAGE_VERSIONS REGEX "^[^#].*")
+file(STRINGS ${MCUBOOT_BASE}/scripts/requirements.txt MCUBOOT_PACKAGE_VERSIONS REGEX "^[^#].*")
+file(STRINGS ${NRF_BASE}/scripts/requirements.txt NRF_PACKAGE_VERSIONS REGEX "^[^#].*")
 
-add_custom_command(
-  OUTPUT ${NRF_RST_OUT}/doc/nrf/versions.txt
-  COMMAND ${CMAKE_COMMAND}
-    -DTOOLS_VERSION_FILES="${tools_files_escaped}"
-    -DPIP_REQUIREMENTS_FILES="${pip_files_escaped}"
-    -DVERSION_IN=${NRF_DOC_DIR}/versions.txt.in
-    -DVERSION_OUT=${NRF_RST_OUT}/doc/nrf/versions.txt
-    -P ${NRF_BASE}/doc/update_versions.cmake
-  DEPENDS
-    ${NRF_DOC_DIR}/versions.txt.in
-    ${tools_version_files}
-    ${pip_requirements_files}
+foreach(package ${ZEPHYR_BASE_PACKAGE_VERSIONS}
+                ${ZEPHYR_DOCS_PACKAGE_VERSIONS}
+                ${MCUBOOT_PACKAGE_VERSIONS}
+                ${NRF_PACKAGE_VERSIONS}
 )
+  string(REGEX REPLACE "(^[^>=\;]*)([\;]|([>=][^\;]*))\;*.*" "\\1" package_name "${package}")
+  string(TOUPPER ${package_name} PACKAGE_NAME_UPPER)
+  set(${PACKAGE_NAME_UPPER}_VERSION ${CMAKE_MATCH_3})
+  if("${${PACKAGE_NAME_UPPER}_VERSION}" STREQUAL "")
+    set(${PACKAGE_NAME_UPPER}_VERSION "\\ ")
+  endif()
+endforeach()
+
+set(NRF_VERSION_IN ${NRF_DOC_DIR}/versions.txt.in)
+set(NRF_RST_VERSION_OUT ${NRF_RST_OUT}/doc/nrf/versions.txt)
+configure_file(${NRF_VERSION_IN} ${NRF_RST_VERSION_OUT} @ONLY)
 
 add_custom_target(
   nrf-doxy
@@ -217,7 +215,6 @@ add_custom_target(
   # Copy all files in doc/ to the rst folder
   COMMAND ${NRF_EXTRACT_CONTENT_COMMAND}
   WORKING_DIRECTORY ${NRF_DOC_DIR}
-  DEPENDS ${NRF_RST_OUT}/doc/nrf/versions.txt
 )
 
 if(WIN32)
@@ -226,7 +223,8 @@ else()
   set(SEP :)
 endif()
 
-set(nrf_sphinx_environment
+set(NRF_SPHINX_BUILD_HTML_COMMAND
+  ${CMAKE_COMMAND} -E env
   ZEPHYR_BASE=${ZEPHYR_BASE}
   ZEPHYR_BUILD=${ZEPHYR_BINARY_DIR}
   ZEPHYR_OUTPUT=${HTML_DIR}/zephyr
@@ -235,14 +233,8 @@ set(nrf_sphinx_environment
   NRF_OUTPUT=${HTML_DIR}/nrf
   KCONFIG_OUTPUT=${HTML_DIR}/kconfig
   NRF_RST_SRC=${NRF_RST_OUT}/doc/nrf
-  ZEPHYR_RST_SRC=${ZEPHYR_BINARY_DIR}/rst/doc
   MCUBOOT_OUTPUT=${HTML_DIR}/mcuboot
   NRFXLIB_OUTPUT=${HTML_DIR}/nrfxlib
-)
-
-
-set(NRF_SPHINX_BUILD_HTML_COMMAND
-  ${CMAKE_COMMAND} -E env ${nrf_sphinx_environment}
   ${SPHINXBUILD} -w ${NRF_SPHINX_LOG} -N -b html ${NRF_SPHINXOPTS} ${NRF_RST_OUT}/doc/nrf ${HTML_DIR}/nrf
 )
 
@@ -251,7 +243,6 @@ add_custom_target(
   COMMAND ${NRF_SPHINX_BUILD_HTML_COMMAND}
   # Merge the Doxygen and Sphinx logs into a single file
   COMMAND ${CMAKE_COMMAND} -P ${ZEPHYR_BASE}/cmake/util/fmerge.cmake ${NRF_DOC_LOG} ${NRF_DOXY_LOG} ${NRF_SPHINX_LOG}
-  COMMAND ${PYTHON_EXECUTABLE} ${KI_SCRIPT} --config-dir ${NRF_KI_DIR} --errors ${NRF_DOC_WARN} --warnings ${NRF_DOC_WARN} ${NRF_DOC_LOG}
   # Copy root index file
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/static/html/index.html ${HTML_DIR}
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
@@ -300,7 +291,9 @@ add_custom_target(
   WORKING_DIRECTORY ${MCUBOOT_DOC_DIR}
 )
 
-set(mcuboot_sphinx_environment
+add_custom_target(
+  mcuboot-html
+  COMMAND ${CMAKE_COMMAND} -E env
   NRF_BASE=${NRF_BASE}
   ZEPHYR_OUTPUT=${HTML_DIR}/zephyr
   NRF_OUTPUT=${HTML_DIR}/nrf
@@ -308,11 +301,6 @@ set(mcuboot_sphinx_environment
   MCUBOOT_OUTPUT=${HTML_DIR}/mcuboot
   MCUBOOT_RST_SRC=${MCUBOOT_RST_OUT}/doc/mcuboot
   KCONFIG_OUTPUT=${HTML_DIR}/kconfig
-)
-
-add_custom_target(
-  mcuboot-html
-  COMMAND ${CMAKE_COMMAND} -E env ${mcuboot_sphinx_environment}
   ${SPHINXBUILD} -w ${MCUBOOT_SPHINX_LOG} -N -b html ${MCUBOOT_SPHINXOPTS} ${MCUBOOT_RST_OUT}/doc/mcuboot ${HTML_DIR}/mcuboot
 
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
@@ -383,7 +371,9 @@ add_custom_target(
   WORKING_DIRECTORY ${NRFXLIB_BASE}
 )
 
-set(nrfxlib_sphinx_environment
+add_custom_target(
+  nrfxlib-html
+  COMMAND ${CMAKE_COMMAND} -E env
   NRF_BASE=${NRF_BASE}
   NRF_OUTPUT=${HTML_DIR}/nrf
   NRF_RST_SRC=${NRF_RST_OUT}/doc/nrf
@@ -391,11 +381,6 @@ set(nrfxlib_sphinx_environment
   NRFXLIB_OUTPUT=${HTML_DIR}/nrfxlib
   NRFXLIB_RST_SRC=${NRFXLIB_RST_OUT}
   KCONFIG_OUTPUT=${HTML_DIR}/kconfig
-)
-
-add_custom_target(
-  nrfxlib-html
-  COMMAND ${CMAKE_COMMAND} -E env ${nrfxlib_sphinx_environment}
   ${SPHINXBUILD} -w ${NRFXLIB_SPHINX_LOG} -N -b html ${NRFXLIB_SPHINXOPTS} ${NRFXLIB_RST_OUT} ${HTML_DIR}/nrfxlib
 
   # Merge the Doxygen and Sphinx logs into a single file
@@ -410,7 +395,14 @@ add_dependencies(nrfxlib nrfxlib-html)
 
 add_custom_target(
   nrfxlib-inventory
-  COMMAND ${CMAKE_COMMAND} -E env ${nrfxlib_sphinx_environment}
+  COMMAND ${CMAKE_COMMAND} -E env
+  NRF_BASE=${NRF_BASE}
+  NRF_OUTPUT=${HTML_DIR}/nrf
+  NRF_RST_SRC=${NRF_RST_OUT}/doc/nrf
+  NRFXLIB_BUILD=${NRFXLIB_BINARY_DIR}
+  NRFXLIB_OUTPUT=${HTML_DIR}/nrfxlib
+  NRFXLIB_RST_SRC=${NRFXLIB_RST_OUT}
+  KCONFIG_OUTPUT=${HTML_DIR}/kconfig
   ${SPHINXBUILD} -w ${NRFXLIB_SPHINX_LOG} -N -b inventory ${NRFXLIB_SPHINXOPTS} ${NRFXLIB_RST_OUT} ${HTML_DIR}/nrfxlib
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
 )
@@ -425,14 +417,13 @@ add_dependencies(nrfxlib-inventory nrfxlib-content nrfxlib-doxy)
 # Kconfig symbols regardless of where they are defined.
 #
 # We rely on the Zephyr Kconfig files pulling in the other Kconfig files, and
-# use the --modules option to gen_kconfig_rest.py to split the documentation
-# into a separate page for each module.
+# use the --modules option to genrest.py to split the documentation into a
+# separate page for each module.
 
 set(KCONFIG_RST_OUT ${KCONFIG_BINARY_DIR}/rst)
-get_directory_property(ZEPHYR_KCONFIG_MODULES DIRECTORY ${ZEPHYR_BASE}/doc DEFINITION ZEPHYR_KCONFIG_MODULES)
 
-# The 'kconfig-content' target uses gen_kconfig_rest.py to generate .rst files
-# for all Kconfig symbols, as well as index pages that point to them
+# The 'kconfig-content' target uses genrest.py to generate .rst files for all
+# Kconfig symbols, as well as index pages that point to them
 add_custom_target(
   kconfig-content
   COMMAND ${CMAKE_COMMAND} -E make_directory ${KCONFIG_RST_OUT}
@@ -448,9 +439,8 @@ add_custom_target(
     KCONFIG_WARN_UNDEF=y
     KCONFIG_TURBO_MODE=${KCONFIG_TURBO_MODE}
     KCONFIG_DOC_MODE=1
-    ${ZEPHYR_KCONFIG_MODULES}
       ${PYTHON_EXECUTABLE}
-        ${ZEPHYR_BASE}/doc/scripts/gen_kconfig_rest.py ${KCONFIG_RST_OUT}
+        ${ZEPHYR_BASE}/doc/scripts/genrest.py ${KCONFIG_RST_OUT}
         --separate-all-index
         --modules Zephyr,zephyr,${ZEPHYR_BASE}
                   nRF,nrf,${NRF_BASE}
@@ -491,38 +481,3 @@ add_custom_target(
   COMMAND ${CMAKE_MAKE_PROGRAM} nrf
   COMMAND ${CMAKE_MAKE_PROGRAM} nrfxlib
 )
-
-
-#
-# Add targets for checking links
-#
-
-add_custom_target(
-  nrf-linkcheck
-  COMMAND ${CMAKE_COMMAND} -E env ${nrf_sphinx_environment}
-  ${SPHINXBUILD} -w ${NRF_SPHINX_LOG} -N -b linkcheck ${NRF_SPHINXOPTS} ${NRF_RST_OUT}/doc/nrf ${NRF_BINARY_DIR}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-)
-
-add_dependencies(nrf-linkcheck nrf-content nrf-doxy)
-
-add_custom_target(
-  nrfxlib-linkcheck
-  COMMAND ${CMAKE_COMMAND} -E env ${nrfxlib_sphinx_environment}
-  ${SPHINXBUILD} -w ${NRFXLIB_SPHINX_LOG} -N -b linkcheck ${NRFXLIB_SPHINXOPTS} ${NRFXLIB_RST_OUT}  ${NRFXLIB_BINARY_DIR}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-)
-
-add_dependencies(nrfxlib-linkcheck nrfxlib-content nrfxlib-doxy)
-
-add_custom_target(
-  mcuboot-linkcheck
-  COMMAND ${CMAKE_COMMAND} -E env ${mcuboot_sphinx_environment}
-  ${SPHINXBUILD} -w ${MCUBOOT_SPHINX_LOG} -N -b linkcheck ${MCUBOOT_SPHINXOPTS} ${MCUBOOT_RST_OUT}/doc/mcuboot ${MCUBOOT_BINARY_DIR}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-)
-
-add_dependencies(mcuboot-linkcheck mcuboot-content)
-
-add_custom_target(linkcheck)
-add_dependencies(linkcheck nrf-linkcheck nrfxlib-linkcheck mcuboot-linkcheck)

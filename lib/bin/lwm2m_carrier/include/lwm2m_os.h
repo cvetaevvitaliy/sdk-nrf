@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #ifndef LWM2M_OS_H__
@@ -197,16 +197,16 @@ void lwm2m_os_log(int level, const char *fmt, ...);
 void lwm2m_os_logdump(const char *msg, const void *data, size_t len);
 
 /**
- * @brief Initialize modem library.
+ * @brief Initialize BSD library.
  *
  * @return 0  on success
  * @return -1 on error
- * @return an error from @em nrf_modem_dfu in case of modem DFU.
+ * @return an error from @em bsd_modem_dfu in case of modem DFU.
  */
 int lwm2m_os_bsdlib_init(void);
 
 /**
- * @brief Shutdown the Modem library.
+ * @brief Shutdown BSD library.
  *
  * @return 0 on success, -1 otherwise.
  */

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -37,7 +37,7 @@ static void cloud_send_msg(void)
 
 	struct cloud_msg msg = {
 		.qos = CLOUD_QOS_AT_MOST_ONCE,
-		.endpoint.type = CLOUD_EP_MSG,
+		.endpoint.type = CLOUD_EP_TOPIC_MSG,
 		.buf = CONFIG_CLOUD_MESSAGE,
 		.len = sizeof(CONFIG_CLOUD_MESSAGE)
 	};
@@ -87,7 +87,7 @@ static void send_service_info(void)
 	int err;
 	struct cloud_msg msg = {
 		.qos = CLOUD_QOS_AT_MOST_ONCE,
-		.endpoint.type = CLOUD_EP_STATE,
+		.endpoint.type = CLOUD_EP_TOPIC_STATE,
 		.buf = SERVICE_INFO_GPS,
 		.len = strlen(SERVICE_INFO_GPS)
 	};
@@ -165,9 +165,6 @@ static void cloud_event_handler(const struct cloud_backend *const backend,
 	case CLOUD_EVT_FOTA_DONE:
 		LOG_INF("CLOUD_EVT_FOTA_DONE");
 		break;
-	case CLOUD_EVT_FOTA_ERROR:
-		LOG_INF("CLOUD_EVT_FOTA_ERROR");
-		break;
 	default:
 		LOG_INF("Unknown cloud event type: %d", evt->type);
 		break;
@@ -189,8 +186,8 @@ static void print_pvt_data(struct gps_pvt *pvt_data)
 		      "Time (UTC): %02u:%02u:%02u\r\n",
 		      pvt_data->longitude, pvt_data->latitude,
 		      pvt_data->altitude, pvt_data->speed, pvt_data->heading,
-		      pvt_data->datetime.year, pvt_data->datetime.month,
-		      pvt_data->datetime.day, pvt_data->datetime.hour,
+		      pvt_data->datetime.day, pvt_data->datetime.month,
+		      pvt_data->datetime.year, pvt_data->datetime.hour,
 		      pvt_data->datetime.minute, pvt_data->datetime.seconds);
 	if (len < 0) {
 		LOG_ERR("Could not construct PVT print");
@@ -251,7 +248,7 @@ static void send_nmea(char *nmea)
 	char buf[150];
 	struct cloud_msg msg = {
 		.qos = CLOUD_QOS_AT_MOST_ONCE,
-		.endpoint.type = CLOUD_EP_MSG,
+		.endpoint.type = CLOUD_EP_TOPIC_MSG,
 		.buf = buf,
 	};
 

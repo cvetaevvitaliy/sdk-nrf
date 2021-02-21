@@ -1,26 +1,22 @@
 .. _release_notes:
 
-Release notes
+Release Notes
 #############
 
 See the release notes for information about specific |NCS| releases.
 
-Known issues for each release are listed on the `known issues page on the master branch`_.
-This page is included only in the latest documentation, because it might contain issues that are discovered after a release is tagged.
+Important issues that are discovered after a release is tagged are listed in the `Known issues`_ wiki page.
 
-.. note::
+.. important::
    A "99" at the end of the version number of this documentation indicates continuous updates on the master branch since the previous major.minor release.
-   When looking at this latest documentation, be aware of the following aspects:
+   Changes between releases that are merged into the master branch are tracked in the `nRF Connect SDK changelog`_ in the sdk-nrf repository wiki.
 
-   * Changes between releases are tracked on the :ref:`ncs_release_notes_latest` page, but the master branch might contain additional changes that are not listed on that page.
-   * The release note pages that are available in the latest documentation might differ slightly from the release notes that were included in the respective |NCS| release at its release date.
-     Therefore, to see the official version of the release notes for a specific |NCS| release, switch to the documentation for the corresponding |NCS| version using the selector in the upper left-hand corner.
+   Note that there might be additional changes on the master branch that are not listed in the changelog.
 
 .. toctree::
    :maxdepth: 1
    :caption: Subpages:
 
-   releases/release-notes-latest
    releases/release-notes-1.4.2
    releases/release-notes-1.4.1
    releases/release-notes-1.4.0

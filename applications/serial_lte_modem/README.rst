@@ -12,6 +12,5 @@ See the subpages for how to use the application, how to extend it, and informati
    :caption: Subpages:
 
    doc/slm_description
-   doc/slm_testing
    doc/slm_extending
    doc/AT_commands_intro

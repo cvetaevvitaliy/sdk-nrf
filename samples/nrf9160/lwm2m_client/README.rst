@@ -200,9 +200,10 @@ This application uses the following |NCS| libraries and drivers:
 * :ref:`dk_buttons_and_leds_readme`
 * :ref:`lte_lc_readme`
 
-It uses the following `sdk-nrfxlib`_ library:
+It uses the following `nrfxlib`_ libraries:
 
-* :ref:`nrfxlib:nrf_modem`
+* :ref:`nrfxlib:bsdlib`
+
 
 In addition, it uses the following sample:
 

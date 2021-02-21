@@ -1,6 +1,6 @@
 sample:
-  name: Bluetooth mesh light switch
-  description: Bluetooth mesh light switch sample
+  description: TBD
+  name: Bluetooth Mesh Light
 tests:
   samples.bluetooth.mesh.light_switch:
     build_only: true

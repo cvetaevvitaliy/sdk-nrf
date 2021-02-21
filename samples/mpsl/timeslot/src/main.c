@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <kernel.h>
@@ -21,6 +21,7 @@
 #define STACKSIZE                    CONFIG_MAIN_STACK_SIZE
 #define THREAD_PRIORITY              K_LOWEST_APPLICATION_THREAD_PRIO
 
+static volatile int timeslot_counter;
 static bool request_in_cb = true;
 
 /* MPSL API calls that can be requested for the non-preemptible thread */
@@ -93,8 +94,10 @@ static mpsl_timeslot_signal_return_param_t *mpsl_timeslot_callback(
 		break;
 	case MPSL_TIMESLOT_SIGNAL_SESSION_CLOSED:
 		break;
+	case MPSL_TIMESLOT_SIGNAL_CANCELLED:
+	case MPSL_TIMESLOT_SIGNAL_BLOCKED:
+	case MPSL_TIMESLOT_SIGNAL_INVALID_RETURN:
 	default:
-		printk("unexpected signal: %u", signal_type);
 		error();
 		break;
 	}

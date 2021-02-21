@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <stdlib.h>
@@ -64,15 +64,6 @@ static char dps_topic_reg_pub[sizeof(DPS_TOPIC_REG_PUB) +
 /* If DPS is enabled, the ID scope must be defined */
 BUILD_ASSERT(sizeof(CONFIG_AZURE_IOT_HUB_DPS_ID_SCOPE) - 1 > 0,
 	     "The DPS ID scope must be defined");
-
-/* Forward declarations */
-static int dps_on_settings_loaded(void);
-static int dps_settings_handler(const char *key, size_t len,
-				settings_read_cb read_cb, void *cb_arg);
-
-SETTINGS_STATIC_HANDLER_DEFINE(azure_iot_hub_dps, DPS_SETTINGS_KEY, NULL,
-			       dps_settings_handler, dps_on_settings_loaded,
-			       NULL);
 
 /**@brief Callback when settings_load() is called. */
 static int dps_settings_handler(const char *key, size_t len,
@@ -143,11 +134,22 @@ static int dps_on_settings_loaded(void)
 static int dps_settings_init(void)
 {
 	int err;
+	struct settings_handler cfg = {
+		.name = DPS_SETTINGS_KEY,
+		.h_set = dps_settings_handler,
+		.h_commit = dps_on_settings_loaded,
+	};
 
 	err = settings_subsys_init();
 	if (err) {
 		LOG_ERR("Failed to initialize settings subsystem, error: %d",
 			err);
+		return err;
+	}
+
+	err = settings_register(&cfg);
+	if (err) {
+		LOG_ERR("Cannot register settings handler");
 		return err;
 	}
 

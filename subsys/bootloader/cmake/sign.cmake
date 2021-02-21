@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2018 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 set(GENERATED_PATH ${PROJECT_BINARY_DIR}/nrf/subsys/bootloader/generated)
@@ -29,9 +29,6 @@ elseif (CONFIG_SB_SIGNING_OPENSSL)
     )
 elseif (CONFIG_SB_SIGNING_CUSTOM)
   set(SIGNATURE_PUBLIC_KEY_FILE ${CONFIG_SB_SIGNING_PUBLIC_KEY})
-  if (NOT EXISTS ${SIGNATURE_PUBLIC_KEY_FILE} OR IS_DIRECTORY ${SIGNATURE_PUBLIC_KEY_FILE})
-    message(WARNING "Invalid public key file: ${SIGNATURE_PUBLIC_KEY_FILE}")
-  endif()
 else ()
   message(WARNING "Unable to parse signing config.")
 endif()
@@ -50,14 +47,13 @@ if (CONFIG_SB_PRIVATE_KEY_PROVIDED)
     ${PROJECT_BINARY_DIR}
     USES_TERMINAL
     )
-endif()
 
-# Public key file target is required for all signing options
-add_custom_target(
+  add_custom_target(
     signature_public_key_file_target
     DEPENDS
     ${SIGNATURE_PUBLIC_KEY_FILE}
   )
+endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/bl_validation_magic.cmake)
 
@@ -122,14 +118,14 @@ foreach (slot ${slots})
       > ${signature_file}
       )
   elseif (CONFIG_SB_SIGNING_CUSTOM)
-    set(custom_sign_cmd "${CONFIG_SB_SIGNING_COMMAND}")
-
-    if ((custom_sign_cmd STREQUAL "") OR (NOT EXISTS ${SIGNATURE_PUBLIC_KEY_FILE}))
-      message(FATAL_ERROR "You must specify a signing command and valid public key file for custom signing.")
+    set(sign_cmd
+      ${CONFIG_SB_SIGNING_COMMAND}
+      ${hash_file}
+      > ${signature_file}
+      )
+    if (sign_cmd STREQUAL "" OR NOT EXISTS ${SIGNATURE_PUBLIC_KEY_FILE})
+      message(WARNING "You must specify a signing command and valid public key file.")
     endif()
-
-    string(APPEND custom_sign_cmd " ${hash_file} > ${signature_file}")
-    string(REPLACE " " ";" sign_cmd ${custom_sign_cmd})
   else ()
     message(WARNING "Unable to parse signing config.")
   endif()
@@ -148,7 +144,6 @@ foreach (slot ${slots})
     COMMENT
     "Creating signature of application"
     USES_TERMINAL
-    COMMAND_EXPAND_LISTS
     )
 
   add_custom_target(

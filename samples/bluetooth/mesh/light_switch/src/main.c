@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /** @file
- *  @brief Nordic mesh light switch sample
+ *  @brief Nordic Mesh light sample
  */
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/mesh/models.h>

@@ -61,7 +61,7 @@ The SUPL client library is not required, and the sample will work without `A-GPS
 Testing
 =======
 
-After programming the sample and all the prerequisites to the development kit, you can test the sample by performing the following steps:
+After programming the sample and all the prerequisites to the board, you can test the sample by performing the following steps:
 
 1. Connect your nRF9160 DK to the PC using a USB cable and power on or reset your nRF9160 DK.
 2. Open a terminal emulator.
@@ -99,7 +99,7 @@ After programming the sample and all the prerequisites to the development kit, y
                 Altitude:   116.274658
                 Speed:      0.039595
                 Heading:    0.000000
-                Date:       2020-03-06
+                Date:       03-06-2020
                 Time (UTC): 05:48:24
 
                 NMEA strings:
@@ -151,17 +151,16 @@ After programming the sample and all the prerequisites to the development kit, y
 Dependencies
 ************
 
-This sample uses the following |NCS| libraries:
+This sample uses the following libraries:
 
-* :ref:`secure_partition_manager`
-* :ref:`at_cmd_readme`
-* :ref:`at_notif_readme`
-* :ref:`supl_client`
+From |NCS|
+  * :ref:`secure_partition_manager`
+  * :ref:`at_cmd_readme`
+  * :ref:`at_notif_readme`
+  * :ref:`supl_client`
 
-It uses the following `sdk-nrfxlib`_ library:
+From nrfxlib
+  * :ref:`nrfxlib:bsdlib`
 
-* :ref:`nrfxlib:nrf_modem`
-
-It uses the following Zephyr library:
-
-* :ref:`net_socket_offloading`
+From Zephyr
+  * :ref:`net_socket_offloading`

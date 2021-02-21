@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -39,12 +39,8 @@ static void reboot_work_handler(struct k_work *work)
 	sys_reboot(0);
 }
 
-static int device_reboot_cb(uint16_t obj_inst_id, uint8_t *args,
-			    uint16_t args_len)
+static int device_reboot_cb(uint16_t obj_inst_id)
 {
-	ARG_UNUSED(args);
-	ARG_UNUSED(args_len);
-
 	LOG_INF("DEVICE: Reboot in progress");
 
 	k_delayed_work_submit(&reboot_work, REBOOT_DELAY);
@@ -52,12 +48,8 @@ static int device_reboot_cb(uint16_t obj_inst_id, uint8_t *args,
 	return 0;
 }
 
-static int device_factory_default_cb(uint16_t obj_inst_id, uint8_t *args,
-				     uint16_t args_len)
+static int device_factory_default_cb(uint16_t obj_inst_id)
 {
-	ARG_UNUSED(args);
-	ARG_UNUSED(args_len);
-
 	LOG_INF("DEVICE: FACTORY DEFAULT (TODO)");
 
 	return 0;

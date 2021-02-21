@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /**
@@ -33,6 +33,13 @@ struct bt_mesh_loc_cli;
 #define BT_MESH_LOC_CLI_INIT(_handlers)                                        \
 	{                                                                      \
 		.handlers = _handlers,                                         \
+		.pub = {.msg = NET_BUF_SIMPLE(MAX(                             \
+				BT_MESH_MODEL_BUF_LEN(                         \
+					BT_MESH_LOC_OP_LOCAL_SET,              \
+					BT_MESH_LOC_MSG_LEN_LOCAL_SET),        \
+				BT_MESH_MODEL_BUF_LEN(                         \
+					BT_MESH_LOC_OP_GLOBAL_SET,             \
+					BT_MESH_LOC_MSG_LEN_GLOBAL_SET))) }    \
 	}
 
 /** @def BT_MESH_MODEL_LOC_CLI
@@ -83,15 +90,8 @@ struct bt_mesh_loc_cli {
 	const struct bt_mesh_loc_cli_handlers *const handlers;
 	/** Response context for tracking acknowledged messages. */
 	struct bt_mesh_model_ack_ctx ack_ctx;
-	/** Publish parameters. */
-	struct bt_mesh_model_pub pub;
-	/* Publication buffer */
-	struct net_buf_simple pub_buf;
-	/* Publication data */
-	uint8_t pub_data[BT_MESH_MODEL_BUF_LEN(BT_MESH_LOC_OP_GLOBAL_SET,
-					       BT_MESH_LOC_MSG_LEN_GLOBAL_SET)];
-	/** Composition data model entry pointer. */
-	struct bt_mesh_model *model;
+	struct bt_mesh_model_pub pub; /**< Publish parameters. */
+	struct bt_mesh_model *model; /**< Access model pointer. */
 };
 
 /** @brief Get the global location of the bound srv.
@@ -108,6 +108,8 @@ struct bt_mesh_loc_cli {
  *
  * @retval 0 Successfully sent the message and populated the @p rsp buffer.
  * @retval -EALREADY A blocking request is already in progress.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -131,6 +133,8 @@ int bt_mesh_loc_cli_global_get(struct bt_mesh_loc_cli *cli,
  *
  * @retval 0 Successfully sent the message and populated the @p rsp buffer.
  * @retval -EALREADY A blocking request is already in progress.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -149,6 +153,8 @@ int bt_mesh_loc_cli_global_set(struct bt_mesh_loc_cli *cli,
  * @param[in] loc New Global Location value to set.
  *
  * @retval 0 Successfully sent the message.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -171,6 +177,8 @@ int bt_mesh_loc_cli_global_set_unack(struct bt_mesh_loc_cli *cli,
  *
  * @retval 0 Successfully sent the message and populated the @p rsp buffer.
  * @retval -EALREADY A blocking request is already in progress.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -194,6 +202,8 @@ int bt_mesh_loc_cli_local_get(struct bt_mesh_loc_cli *cli,
  *
  * @retval 0 Successfully sent the message and populated the @p rsp buffer.
  * @retval -EALREADY A blocking request is already in progress.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -212,6 +222,8 @@ int bt_mesh_loc_cli_local_set(struct bt_mesh_loc_cli *cli,
  * @param[in] loc New Local Location value to set.
  *
  * @retval 0 Successfully sent the message.
+ * @retval -ENOTSUP A message context was not provided and publishing is not
+ * supported.
  * @retval -EADDRNOTAVAIL A message context was not provided and publishing is
  * not configured.
  * @retval -EAGAIN The device has not been provisioned.
@@ -231,4 +243,4 @@ extern const struct bt_mesh_model_cb _bt_mesh_loc_cli_cb;
 
 #endif /* BT_MESH_GEN_LOC_CLI_H__ */
 
-/** @} */
+/* @} */

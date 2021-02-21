@@ -13,21 +13,21 @@ After programming and testing a sample application, you probably want to make so
 Adding files and changing compiler settings
 *******************************************
 
-All files that your application uses must be specified in the :file:`CMakeLists.txt` file.
+All files that your application uses must be specified in the :file:`CMakeList.txt` file.
 By default, most samples include only the main application file :file:`src/main.c`.
 This means that you must add all other files that you are using.
 
-You can also configure compiler options, application defines, or include directories, or set :ref:`build types <gs_modifying_build_types>` in :file:`CMakeLists.txt`.
+You can also configure compiler options, application defines, or include directories, or set :ref:`build types <gs_modifying_build_types>` in :file:`CMakeList.txt`.
 
-To update the :file:`CMakeLists.txt` file, either edit it directly or use |SES| (SES) to maintain it.
+To update the :file:`CMakeList.txt` file, either edit it directly or use |SES| (SES) to maintain it.
 
 
-Editing CMakeLists.txt directly
-===============================
+Editing :file:`CMakeList.txt` directly
+======================================
 
-Add all files that your application uses to the ``target_sources`` function in :file:`CMakeLists.txt`.
+Add all files that your application uses to the ``target_sources`` function in :file:`CMakeList.txt`.
 To include several files, it can be useful to specify them with a wildcard.
-For example, to include all :file:`.c` files from the :file:`src` folder, add the following lines to your :file:`CMakeLists.txt`::
+For example, to include all :file:`.c` files from the :file:`src` folder, add the following lines to your :file:`CMakeList.txt`::
 
    FILE(GLOB app_sources src/*.c)
    target_sources(app PRIVATE ${app_sources})
@@ -36,11 +36,11 @@ Instead of specifying each file (explicitly or with a wildcard), you can include
 
    target_include_directories(app PRIVATE src)
 
-See the `CMake documentation`_ and :ref:`zephyr:cmake-details` in the Zephyr documentation for more information about how to edit :file:`CMakeLists.txt`.
+See the `CMake documentation`_ and :ref:`zephyr:cmake-details` in the Zephyr documentation for more information about how to edit :file:`CMakeList.txt`.
 
 
-Maintaining CMakeLists.txt in SES
-=================================
+Maintaining :file:`CMakeList.txt` in SES
+========================================
 
 To add a file in SES, right-click :guilabel:`Project 'app/libapp.a'` in the Project Explorer.
 Select either :guilabel:`Add new file to CMakeLists.txt` to create a file and add it or :guilabel:`Add existing file to CMakeLists.txt` to add a file that already exists.
@@ -179,7 +179,7 @@ This means that you do not have to use one :file:`prj.conf` file for your projec
 
 .. note::
     Creating build types and selecting them is optional.
-    This is a feature specific to the :ref:`application development in nRF Connect SDK <app_build_system>`.
+    This is a feature specific to the :ref:`application development in nRF Connect SDK <ncs-app-dev>`.
 
 .. _gs_modifying_build_types_creating:
 
@@ -231,17 +231,11 @@ Selecting a build type from command line
 
 .. build_types_selection_cmd_start
 
-To select the build type when building the application from command line, specify the build type by adding the following parameter to the ``west build`` command:
+To select the build type when building the application from command line, specify the build type by adding the ``-- -DCMAKE_BUILD_TYPE=selected_build_type`` to the ``west build`` command.
 
-.. parsed-literal::
-   :class: highlight
+For example, you can build the ``ZRelease`` firmware for the PCA20041 board by running the following command in the project directory:
 
-   -- -DCMAKE_BUILD_TYPE=\ *selected_build_type*\
-
-For example, you can replace the *selected_build_type* variable to build the ``ZRelease`` firmware for PCA20041 by running the following command in the project directory:
-
-.. parsed-literal::
-   :class: highlight
+.. code-block:: console
 
    west build -b nrf52840_pca20041 -d build_pca20041 -- -DCMAKE_BUILD_TYPE=ZRelease
 

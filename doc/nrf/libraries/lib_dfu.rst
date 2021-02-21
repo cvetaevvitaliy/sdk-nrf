@@ -9,4 +9,3 @@ DFU libraries
    :caption: Subpages:
 
    ../../include/dfu/*
-   ../../include/mgmt/*

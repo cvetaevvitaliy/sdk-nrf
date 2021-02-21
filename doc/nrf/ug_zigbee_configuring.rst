@@ -19,13 +19,7 @@ Zigbee requires the following modules to properly operate in |NCS|:
 * :ref:`nrfxlib:zboss` available in nrfxlib, with the OSIF subsystem acting as the linking layer between the ZBOSS stack and |NCS|.
   OSIF implements a series of functions used by ZBOSS and is included in the |NCS|'s Zigbee subsystem.
   The files that handle the OSIF integration are located in :file:`nrf/subsys/zigbee/osif`.
-
-  * The ZBOSS stack library comes in production and development versions.
-    The production version is enabled by default with the :option:`CONFIG_ZIGBEE_LIBRARY_PRODUCTION` Kconfig option.
-    The development version includes additional features in experimental state and can be enabled with the :option:`CONFIG_ZIGBEE_LIBRARY_DEVELOPMENT` Kconfig option.
-    For more information, see :ref:`nrfxlib:zboss_configuration`.
-
-* :ref:`zephyr:ieee802154_interface` radio driver - This library is automatically enabled when working with Zigbee on Nordic Semiconductor's development kits.
+* :ref:`zephyr:ieee802154_interface` radio driver - This library is automatically enabled when working with Zigbee on Nordic Semiconductor's Development Kits.
 
 .. _zigbee_ug_configuration:
 
@@ -75,18 +69,17 @@ With the sleepy behavior enabled, the unused part of RAM memory is powered off, 
 The sleep current of MCU can be lowered to about 1.8 uA by completing the following steps:
 
 1. Turn off UART by setting :option:`CONFIG_SERIAL` to ``n``.
-#. For current measurements for nRF52840 DK board (PCA10056) or nRF52833 DK board (PCA10100), set **SW6** to ``nRF ONLY`` position to get the desired results.
-   See :ref:`ug_nrf52` for more information about these kits.
+#. Enable Zephyr's tickless kernel by setting :option:`CONFIG_TICKLESS_KERNEL` to ``y``.
+#. For current measurements for |nRF52840DK| or |nRF52833DK|, set **SW6** to ``nRF ONLY`` position to get the desired results.
 
 Optional configuration
 **********************
 
 After enabling the Zigbee protocol and defining the Zigbee device role, you can enable additional options in Kconfig and modify `ZBOSS stack start options`_.
 
-Device operational channel
-==========================
+You can enable the following additional configuration options:
 
-You can enable one of the following alternative options to select the channel on which the Zigbee device can operate:
+* One of the following alternative options for selecting the channel on which the Zigbee device can operate:
 
   * :option:`CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_SINGLE` - Single mode is enabled by default.
     The default channel is set to 16.
@@ -96,29 +89,11 @@ You can enable one of the following alternative options to select the channel on
     For example, you can set channels 13, 16, and 21.
     You must have at least one channel enabled with this option.
 
-.. _ug_zigbee_configuring_eui64:
-
-IEEE 802.15.4 EUI-64 configuration
-==================================
-
-The Zigbee stack uses the EUI-64 address that is configured in the IEEE 802.15.4 shim layer.
-By default, it uses an address from Nordic Semiconductor's pool.
-
-If your devices should use different address, you can change the address according to your company's addressing scheme.
-
-.. include:: /includes/ieee802154_eui64_conf.txt
-
-At the end of the configuration process, you can check the EUI-64 value using :ref:`lib_zigbee_shell`:
-
-.. code-block:: console
-
-   > zdo eui64
-   8877665544332211
-   Done
-
-.. note::
-    Alternatively, you may use the Production Configuration feature to change the address.
-    The Production Configuration takes precedence over the shim's configuration.
+* :option:`CONFIG_IEEE802154_VENDOR_OUI_ENABLE` - MAC Address Block Large is set to Nordic Semiconductor's MA-L block (f4-ce-36) by default.
+  To set a different MA-L, enable this option and edit the :option:`CONFIG_IEEE802154_VENDOR_OUI` to the desired value.
+* :option:`CONFIG_ZIGBEE_SHELL_LOG_ENABLED` - Enables logging of the incoming ZCL frames.
+  This option is enabled by default, and it uses the logging level set in :option:`CONFIG_ZIGBEE_SHELL_LOG_LEVEL`.
+  See :ref:`zigbee_ug_logging_logger_options` for more information.
 
 ZBOSS stack start options
 =========================
@@ -169,8 +144,7 @@ To do this, configure the related Kconfig option for one or more modules that yo
 * :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL`
 * :option:`CONFIG_ZBOSS_OSIF_LOG_LEVEL`
 * :option:`CONFIG_ZIGBEE_SHELL_LOG_LEVEL`
-* :option:`CONFIG_ZIGBEE_APP_UTILS_LOG_LEVEL`
-* :option:`CONFIG_ZIGBEE_LOGGER_EP_LOG_LEVEL`
+* :option:`CONFIG_ZIGBEE_HELPERS_LOG_LEVEL`
 
 For each of the modules, you can set the following logging options:
 
@@ -181,13 +155,3 @@ For each of the modules, you can set the following logging options:
 * ``LOG_LEVEL_DBG`` - Enables logging for debug messages, informational messages, errors, and warnings.
 
 For example, setting :option:`CONFIG_ZBOSS_TRACE_LOG_LEVEL_INF` will enable logging of informational messages, errors, and warnings for the ZBOSS Trace module.
-
-.. _zigbee_ug_static_partition:
-
-Upgrading Zigbee application
-****************************
-
-When upgrading the Zigbee application, use the :ref:`ug_pm_static` of the Partition Manager to ensure that ZBOSS' NVRAM is placed in the same area of flash.
-This is because enabling additional features (for example, Zephyr's :ref:`zephyr:nvs_api`) can change the placement of the partition in the flash and the ZBOSS settings can be lost, as the application is not able to find the partition.
-
-The static configuration is required regardless of the application version and the upgrading method (:ref:`lib_zigbee_fota` or :ref:`ug_bootloader`).

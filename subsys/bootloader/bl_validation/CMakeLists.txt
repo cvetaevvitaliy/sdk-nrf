@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/bl_validation_magic.cmake)

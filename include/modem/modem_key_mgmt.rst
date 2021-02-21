@@ -15,9 +15,9 @@ You specify this tag when adding the credentials and use it when you update or d
 All related credentials share the same security tag.
 You can use the library to check if a specific security tag exists.
 
-To establish a connection, pass the security tag to the :ref:`nrfxlib:nrf_modem` when creating a secure socket.
+To establish a connection, pass the security tag to the :ref:`nrfxlib:bsdlib` when creating a secure socket.
 
-See :ref:`nrfxlib:security_tags` for more information about how security tags are used in the Modem library.
+See :ref:`nrfxlib:security_tags` for more information about how security tags are used in the BSD library.
 
 .. important::
    Security credentials usually exceed the default AT command response length.
@@ -26,7 +26,7 @@ See :ref:`nrfxlib:security_tags` for more information about how security tags ar
 .. _cert_dwload:
 
 Certificates
-************
+============
 
 You can download a certificate for a given server using your web browser.
 Alternatively, you can obtain it from a dedicated website like `SSL Labs`_.

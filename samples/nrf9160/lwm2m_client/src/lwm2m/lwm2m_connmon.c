@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -77,6 +77,7 @@ static void modem_signal_handler(char rsrp_value)
 	}
 
 	modem_rsrp = (int8_t)rsrp_value - MODEM_INFO_RSRP_OFFSET_VAL;
+	LOG_DBG("rsrp:%d", modem_rsrp);
 	k_work_submit(&modem_signal_work);
 }
 

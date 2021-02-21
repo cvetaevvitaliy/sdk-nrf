@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <stdbool.h>
@@ -12,9 +12,9 @@
 #include <zephyr.h>
 #include <zephyr/types.h>
 #include <net/cloud.h>
-#if defined(CONFIG_NRF_MODEM_LIB)
+#if defined(CONFIG_BSD_LIBRARY)
 #include <modem/modem_info.h>
-#endif /* CONFIG_NRF_MODEM_LIB */
+#endif /* CONFIG_BSD_LIBRARY */
 #include <date_time.h>
 
 #include "cJSON.h"

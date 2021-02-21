@@ -1,18 +1,14 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
-
-#ifdef CONFIG_LWM2M_CARRIER
 #include <lwm2m_carrier.h>
-#endif /* CONFIG_LWM2M_CARRIER */
 #include <zephyr.h>
 
-#ifdef CONFIG_LWM2M_CARRIER
-void nrf_modem_recoverable_error_handler(uint32_t err)
+void bsd_recoverable_error_handler(uint32_t err)
 {
-	printk("Modem library recoverable error: %u\n", (unsigned int)err);
+	printk("bsdlib recoverable error: %u\n", (unsigned int)err);
 }
 
 void print_err(const lwm2m_carrier_event_t *evt)
@@ -123,7 +119,6 @@ int lwm2m_carrier_event_handler(const lwm2m_carrier_event_t *event)
 
 	return 0;
 }
-#endif /* CONFIG_LWM2M_CARRIER */
 
 void main(void)
 {

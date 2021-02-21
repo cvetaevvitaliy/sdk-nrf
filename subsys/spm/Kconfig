@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 menu "SPM"
@@ -9,9 +9,8 @@ menu "SPM"
 config SPM
 	bool "Use Secure Partition Manager"
 	default y if TRUSTED_EXECUTION_NONSECURE
-	depends on !BUILD_WITH_TFM
 	select FW_INFO
-	imply ARM_FIRMWARE_USES_SECURE_ENTRY_FUNCS if SPM_SECURE_SERVICES
+	imply ARM_FIRMWARE_USES_SECURE_ENTRY_FUNCS
 
 if SPM
 module=SPM
@@ -38,15 +37,14 @@ config PM_PARTITION_SIZE_SPM
 
 config PM_PARTITION_SIZE_SPM_SRAM
 	hex "RAM reserved for SPM"
-	default 0 if !SPM_SECURE_SERVICES
 	default 0x10000 if SOC_NRF9160
 	default 0x8000
 	help
 	  RAM area set aside for the SPM.
-	  On the nRF9160 the Modem library needs to be included in the build.
-	  There are scrict requirements to the RAM area reserved for Modem library.
+	  On the nRF9160 the BSDLib needs to be included in the build.
+	  There are scrict requirements to the RAM area reserved for BSDLib.
 	  Specifically it must be 64kB from RAM offset 0x10000.
-	  By setting the SPM RAM to 0x10000 we ensure that Modem library RAM ends
+	  By setting the SPM RAM to 0x10000 we ensure that BSDLib RAM ends
 	  up in the right place.
 
 config SPM_BOOT_SILENTLY
@@ -108,9 +106,6 @@ config SPM_SERVICE_FIND_FIRMWARE_INFO
 	  marked as secure. This service allows it to request firmware info
 	  about image stored at a given address.
 
-config SPM_SERVICE_S0_ACTIVE
-	bool "Enable secure service to check if S0 is active B1 slot"
-
 config SPM_SERVICE_PREVALIDATE
 	bool "Prevalidate B1 upgrades (Requires Immutable Bootloader)"
 	default n
@@ -159,6 +154,10 @@ config SPM_NRF_RTC1_NS
 
 config SPM_NRF_IPC_NS
 	bool "IPC is Non-Secure"
+	default y
+
+config SPM_NRF_NFCT_NS
+	bool "NFCT is Non-Secure"
 	default y
 
 config SPM_NRF_NVMC_NS
@@ -241,94 +240,14 @@ config SPM_NRF_REGULATORS_NS
 	bool "Regulators is Non-Secure"
 	default y
 
-if SOC_NRF9160
 config SPM_NRF_WDT_NS
 	bool "WDT is Non-Secure"
 	default y
-endif #SOC_NRF9160
+endmenu
 
 config SPM_NRF_DPPIC_NS
 	bool "DPPIC is Non-Secure"
 	default y
-
-if SOC_NRF5340_CPUAPP
-config SPM_NRF_DCNF_NS
-	bool "DCNF is Non-Secure"
-	default n
-
-config SPM_NRF_CTRLAP_NS
-	bool "CTRLAP is Non-Secure"
-	default n
-
-config SPM_NRF_OSCILLATORS_NS
-	bool "Oscillators is Non-Secure"
-	default y
-
-config SPM_NRF_RESET_NS
-	bool "Reset is Non-Secure"
-	default y
-
-config SPM_NRF_SPIM4_NS
-	bool "SPIM4 is Non-Secure"
-	default y
-
-config SPM_NRF_WDT0_NS
-	bool "WDT0 is Non-Secure"
-	default y
-
-config SPM_NRF_WDT1_NS
-	bool "WDT1 is Non-Secure"
-	default y
-
-config SPM_NRF_COMP_NS
-	bool "COMP is Non-Secure"
-	default y
-
-config SPM_NRF_LPCOMP_NS
-	bool "LPCOMP is Non-Secure"
-	default y
-
-config SPM_NRF_PDM0_NS
-	bool "PDM0 is Non-Secure"
-	default y
-
-config SPM_NRF_I2S0_NS
-	bool "I2S0 is Non-Secure"
-	default y
-
-config SPM_NRF_QSPI_NS
-	bool "QSPI is Non-Secure"
-	default y
-
-config SPM_NRF_NFCT_NS
-	bool "NFCT is Non-Secure"
-	default y
-
-config SPM_NRF_MUTEX_NS
-	bool "Mutex is Non-Secure"
-	default y
-
-config SPM_NRF_QDEC0_NS
-	bool "QDEC0 is Non-Secure"
-	default y
-
-config SPM_NRF_QDEC1_NS
-	bool "QUDEC1 is Non-Secure"
-	default y
-
-config SPM_NRF_USBD_NS
-	bool "USBD is Non-Secure"
-	default y
-
-config SPM_NRF_USBREGULATOR_NS
-	bool "USB Regulator is Non-Secure"
-	default y
-
-config SPM_NRF_P1_NS
-	bool "P1 is Non-Secure"
-	default y
-endif #SOC_NRF5340_CPUAPP
-endmenu
 
 config SPM_NRF_DPPIC_PERM_MASK
 	hex "Set DPPIC PERM mask for Non-secure"

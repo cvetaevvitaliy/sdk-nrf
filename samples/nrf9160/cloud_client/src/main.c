@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -55,20 +55,10 @@ static void cloud_update_work_fn(struct k_work *work)
 
 	struct cloud_msg msg = {
 		.qos = CLOUD_QOS_AT_MOST_ONCE,
+		.endpoint.type = CLOUD_EP_TOPIC_MSG,
 		.buf = CONFIG_CLOUD_MESSAGE,
 		.len = strlen(CONFIG_CLOUD_MESSAGE)
 	};
-
-	/* When using the nRF Cloud backend data is sent to the message topic.
-	 * This is in order to visualize the data in the web UI terminal.
-	 * For Azure IoT Hub and AWS IoT, messages are addressed directly to the
-	 * device twin (Azure) or device shadow (AWS).
-	 */
-	if (strcmp(CONFIG_CLOUD_BACKEND, "NRF_CLOUD") == 0) {
-		msg.endpoint.type = CLOUD_EP_MSG;
-	} else {
-		msg.endpoint.type = CLOUD_EP_STATE;
-	}
 
 	err = cloud_send(cloud_backend, &msg);
 	if (err) {
@@ -125,8 +115,7 @@ void cloud_event_handler(const struct cloud_backend *const backend,
 		break;
 	case CLOUD_EVT_DATA_RECEIVED:
 		LOG_INF("CLOUD_EVT_DATA_RECEIVED");
-		LOG_INF("Data received from cloud: %.*s",
-			evt->data.msg.len,
+		LOG_INF("Data received from cloud: %s",
 			log_strdup(evt->data.msg.buf));
 		break;
 	case CLOUD_EVT_PAIR_REQUEST:
@@ -137,9 +126,6 @@ void cloud_event_handler(const struct cloud_backend *const backend,
 		break;
 	case CLOUD_EVT_FOTA_DONE:
 		LOG_INF("CLOUD_EVT_FOTA_DONE");
-		break;
-	case CLOUD_EVT_FOTA_ERROR:
-		LOG_INF("CLOUD_EVT_FOTA_ERROR");
 		break;
 	default:
 		LOG_INF("Unknown cloud event type: %d", evt->type);
@@ -199,7 +185,7 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 
 static void modem_configure(void)
 {
-#if defined(CONFIG_NRF_MODEM_LIB)
+#if defined(CONFIG_BSD_LIBRARY)
 	if (IS_ENABLED(CONFIG_LTE_AUTO_INIT_AND_CONNECT)) {
 		/* Do nothing, modem is already configured and LTE connected. */
 	} else {

@@ -1,38 +1,26 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <string.h>
 #include <bluetooth/mesh/gen_onoff_cli.h>
 #include "model_utils.h"
 
-static int decode_status(struct net_buf_simple *buf,
+static void decode_status(struct net_buf_simple *buf,
 			  struct bt_mesh_onoff_status *status)
 {
-	uint8_t on_off;
-
-	on_off = net_buf_simple_pull_u8(buf);
-	if (on_off > 1) {
-		return -EINVAL;
-	}
-	status->present_on_off = on_off;
+	status->present_on_off = net_buf_simple_pull_u8(buf);
 
 	if (buf->len == 2) {
-		on_off = net_buf_simple_pull_u8(buf);
-		if (on_off > 1) {
-			return -EINVAL;
-		}
-		status->target_on_off = on_off;
+		status->target_on_off = net_buf_simple_pull_u8(buf);
 		status->remaining_time =
 			model_transition_decode(net_buf_simple_pull_u8(buf));
 	} else {
 		status->target_on_off = status->present_on_off;
 		status->remaining_time = 0;
 	}
-
-	return 0;
 }
 
 static void handle_status(struct bt_mesh_model *model,
@@ -47,9 +35,7 @@ static void handle_status(struct bt_mesh_model *model,
 	struct bt_mesh_onoff_cli *cli = model->user_data;
 	struct bt_mesh_onoff_status status;
 
-	if (decode_status(buf, &status)) {
-		return;
-	}
+	decode_status(buf, &status);
 
 	if (model_ack_match(&cli->ack_ctx, BT_MESH_ONOFF_OP_STATUS, ctx)) {
 		struct bt_mesh_onoff_status *rsp =
@@ -75,25 +61,14 @@ static int bt_mesh_onoff_cli_init(struct bt_mesh_model *model)
 	struct bt_mesh_onoff_cli *cli = model->user_data;
 
 	cli->model = model;
-	cli->pub.msg = &cli->pub_buf;
-	net_buf_simple_init_with_data(&cli->pub_buf, cli->pub_data,
-				      sizeof(cli->pub_data));
+	net_buf_simple_init(cli->pub.msg, 0);
 	model_ack_init(&cli->ack_ctx);
 
 	return 0;
 }
 
-static void bt_mesh_onoff_cli_reset(struct bt_mesh_model *model)
-{
-	struct bt_mesh_onoff_cli *cli = model->user_data;
-
-	net_buf_simple_reset(cli->pub.msg);
-	model_ack_reset(&cli->ack_ctx);
-}
-
 const struct bt_mesh_model_cb _bt_mesh_onoff_cli_cb = {
 	.init = bt_mesh_onoff_cli_init,
-	.reset = bt_mesh_onoff_cli_reset,
 };
 
 int bt_mesh_onoff_cli_get(struct bt_mesh_onoff_cli *cli,

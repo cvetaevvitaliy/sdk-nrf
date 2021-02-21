@@ -21,7 +21,6 @@ tags
 .envrc
 .vscode
 sanity-out*
-twister-out*
 
 doc/_build
 doc/nrf/_doxygen/

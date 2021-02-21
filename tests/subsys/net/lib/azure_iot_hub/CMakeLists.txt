@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2020 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 cmake_minimum_required(VERSION 3.13.1)
@@ -26,5 +26,4 @@ target_compile_options(app
   -DCONFIG_AZURE_IOT_HUB_TOPIC_ELEMENT_MAX_LEN=48
   -DCONFIG_AZURE_IOT_HUB_PROPERTY_BAG_MAX_COUNT=5
   -DCONFIG_AZURE_IOT_HUB_LOG_LEVEL=0
-  -DCONFIG_AZURE_IOT_HUB_TOPIC_PROPERTY_BAG_PREFIX=y
 )

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <bluetooth/mesh/time_srv.h>
@@ -10,6 +10,7 @@
 #include "model_utils.h"
 #include "time_util.h"
 
+#define SEC_PER_MIN 60U
 #define SUBSEC_STEPS 256U
 
 struct bt_mesh_time_srv_settings_data {
@@ -370,20 +371,6 @@ static int bt_mesh_time_srv_init(struct bt_mesh_model *model)
 	return 0;
 }
 
-static void bt_mesh_time_srv_reset(struct bt_mesh_model *model)
-{
-	struct bt_mesh_time_srv *srv = model->user_data;
-	struct bt_mesh_time_srv_data data = { 0 };
-
-	srv->data = data;
-	net_buf_simple_reset(srv->pub.msg);
-
-	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
-		(void)bt_mesh_model_data_store(srv->model, false, NULL, NULL,
-					       0);
-	}
-}
-
 #ifdef CONFIG_BT_MESH_TIME_SRV_PERSISTENT
 static int bt_mesh_time_srv_settings_set(struct bt_mesh_model *model,
 					 const char *name, size_t len_rd,
@@ -408,7 +395,6 @@ static int bt_mesh_time_srv_settings_set(struct bt_mesh_model *model,
 
 const struct bt_mesh_model_cb _bt_mesh_time_srv_cb = {
 	.init = bt_mesh_time_srv_init,
-	.reset = bt_mesh_time_srv_reset,
 #ifdef CONFIG_BT_MESH_TIME_SRV_PERSISTENT
 	.settings_set = bt_mesh_time_srv_settings_set,
 #endif
@@ -468,7 +454,6 @@ int64_t bt_mesh_time_srv_mktime(struct bt_mesh_time_srv *srv, struct tm *timeptr
 	int64_t curr_time_zone =
 		zone_offset_to_sec(srv->data.sync.status.time_zone_offset);
 	struct bt_mesh_time_tai tai;
-	int64_t sec;
 	int err;
 
 	err = ts_to_tai(&tai, timeptr);
@@ -476,34 +461,31 @@ int64_t bt_mesh_time_srv_mktime(struct bt_mesh_time_srv *srv, struct tm *timeptr
 		return err;
 	}
 
-	sec = tai.sec;
-	sec -= curr_time_zone;
-	sec += curr_utc_delta;
+	tai.sec -= curr_time_zone;
+	tai.sec += curr_utc_delta;
 
 	int64_t new_time_zone =
 		zone_offset_to_sec(srv->data.time_zone_change.new_offset);
 
 	if (srv->data.time_zone_change.timestamp &&
-	    sec >= srv->data.time_zone_change.timestamp + new_time_zone) {
-		sec -= new_time_zone;
+	    tai.sec >= srv->data.time_zone_change.timestamp + new_time_zone) {
+		tai.sec -= new_time_zone;
 	} else {
-		sec -= curr_time_zone;
+		tai.sec -= curr_time_zone;
 	}
 
 	int64_t new_utc_delta = srv->data.tai_utc_change.delta_new;
 
 	if (srv->data.tai_utc_change.timestamp &&
-	    sec >= srv->data.tai_utc_change.timestamp - new_utc_delta) {
-		sec += new_utc_delta;
+	    tai.sec >= srv->data.tai_utc_change.timestamp - new_utc_delta) {
+		tai.sec += new_utc_delta;
 	} else {
-		sec += curr_utc_delta;
+		tai.sec += curr_utc_delta;
 	}
 
-	if ((sec < 0) || (sec < srv->data.sync.status.tai.sec)) {
+	if ((tai.sec < 0) || (tai.sec < srv->data.sync.status.tai.sec)) {
 		return -EINVAL;
 	}
-
-	tai.sec = sec;
 
 	return tai_to_ms(&tai) - tai_to_ms(&srv->data.sync.status.tai) +
 	       srv->data.sync.uptime;

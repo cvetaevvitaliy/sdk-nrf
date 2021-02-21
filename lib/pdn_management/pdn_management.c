@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <stdint.h>
 #include <stddef.h>
@@ -33,3 +33,4 @@ void pdn_disconnect(int pdn_fd)
 {
 	close(pdn_fd);
 }
+

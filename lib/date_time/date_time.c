@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <date_time.h>
@@ -145,11 +145,7 @@ static int sntp_time_request(struct ntp_servers *server, uint32_t timeout,
 	static struct addrinfo hints;
 	struct sntp_ctx sntp_ctx;
 
-	if (IS_ENABLED(CONFIG_DATE_TIME_IPV6)) {
-		hints.ai_family = AF_INET6;
-	} else {
-		hints.ai_family = AF_INET;
-	}
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_protocol = 0;
 
@@ -245,20 +241,6 @@ static void new_date_time_get(void)
 
 		LOG_DBG("Current time not valid");
 
-#if defined(CONFIG_DATE_TIME_NTP)
-		LOG_DBG("Fallback on NTP server");
-
-		err = time_NTP_server_get();
-		if (err == 0) {
-			LOG_DBG("Time from NTP server obtained");
-			initial_valid_time = true;
-			evt.type = DATE_TIME_OBTAINED_NTP;
-			date_time_notify_event(&evt);
-			continue;
-		}
-
-		LOG_DBG("Not getting time from NTP server");
-#endif
 #if defined(CONFIG_DATE_TIME_MODEM)
 		LOG_DBG("Fallback on cellular network time");
 
@@ -272,6 +254,20 @@ static void new_date_time_get(void)
 		}
 
 		LOG_DBG("Not getting cellular network time");
+#endif
+#if defined(CONFIG_DATE_TIME_NTP)
+		LOG_DBG("Fallback on NTP server");
+
+		err = time_NTP_server_get();
+		if (err == 0) {
+			LOG_DBG("Time from NTP server obtained");
+			initial_valid_time = true;
+			evt.type = DATE_TIME_OBTAINED_NTP;
+			date_time_notify_event(&evt);
+			continue;
+		}
+
+		LOG_DBG("Not getting time from NTP server");
 #endif
 		LOG_DBG("Not getting time from any time source");
 
@@ -417,17 +413,12 @@ int date_time_now(int64_t *unix_time_ms)
 	return err;
 }
 
-bool date_time_is_valid(void)
-{
-	return initial_valid_time;
-}
-
 void date_time_register_handler(date_time_evt_handler_t evt_handler)
 {
 	if (evt_handler == NULL) {
 		app_evt_handler = NULL;
 
-		LOG_DBG("Previously registered handler %p de-registered",
+		LOG_INF("Previously registered handler %p de-registered",
 			app_evt_handler);
 
 		return;
@@ -471,4 +462,6 @@ int date_time_timestamp_clear(int64_t *unix_timestamp)
 	return 0;
 }
 
-SYS_INIT(date_time_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+DEVICE_INIT(date_time, "DATE_TIME",
+	    date_time_init, NULL, NULL, APPLICATION,
+	    CONFIG_APPLICATION_INIT_PRIORITY);

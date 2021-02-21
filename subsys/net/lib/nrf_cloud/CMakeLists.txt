@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 zephyr_library()
 zephyr_library_sources(
@@ -15,7 +15,4 @@ zephyr_library_sources_ifdef(
 	CONFIG_NRF_CLOUD_AGPS
 	src/nrf_cloud_agps.c
 	src/nrf_cloud_agps_utils.c)
-zephyr_library_sources_ifdef(
-	CONFIG_NRF_CLOUD_FOTA
-	src/nrf_cloud_fota.c)
 zephyr_include_directories(./include)

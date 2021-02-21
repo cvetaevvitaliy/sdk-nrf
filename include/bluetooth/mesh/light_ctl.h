@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 /**
  * @file
@@ -21,105 +21,101 @@ extern "C" {
 #endif
 
 /** Minimum permitted Temperature level */
-#define BT_MESH_LIGHT_TEMP_MIN 800
+#define BT_MESH_LIGHT_TEMP_RANGE_MIN 800
 /** Maximum permitted Temperature level */
-#define BT_MESH_LIGHT_TEMP_MAX 20000
+#define BT_MESH_LIGHT_TEMP_RANGE_MAX 20000
 
 /** All Light CTL parameters */
 struct bt_mesh_light_ctl {
 	/** Light level */
 	uint16_t light;
-	/** Light temperature */
+	/** Temperature level */
 	uint16_t temp;
-	/** Delta UV */
+	/** Delta UV level */
 	int16_t delta_uv;
 };
 
-/** Light temperature parameters. */
+/** Temperature subset of Light CTL parameters. */
 struct bt_mesh_light_temp {
-	/** Light temperature */
+	/** Temperature level */
 	uint16_t temp;
-	/** Delta UV */
+	/** Delta UV level */
 	int16_t delta_uv;
 };
 
 /** Light CTL set message parameters. */
 struct bt_mesh_light_ctl_set {
-	/** CTL set parameters. */
+	/** CTL set parameters */
 	struct bt_mesh_light_ctl params;
-	/** Transition time parameters for the state change, or NULL to use the
-	 *  default transition time.
-	 */
+	/** Transition time parameters for the state change. */
 	const struct bt_mesh_model_transition *transition;
 };
 
 /** Light CTL status message parameters. */
 struct bt_mesh_light_ctl_status {
-	/** Current light level. */
+	/** Current light level */
 	uint16_t current_light;
-	/** Current light temperature. */
+	/** Current Temperature level */
 	uint16_t current_temp;
-	/** Target light level. */
+	/** Target light level */
 	uint16_t target_light;
-	/** Target light temperature. */
+	/** Target Temperature level */
 	uint16_t target_temp;
 	/** Remaining time for the state change (ms). */
-	uint32_t remaining_time;
+	int32_t remaining_time;
 };
 
 /** Light CTL Temperature set message parameters. */
 struct bt_mesh_light_temp_set {
-	/** New light temperature. */
+	/** CTL Temperature set parameters */
 	struct bt_mesh_light_temp params;
-	/** Transition time parameters for the state change, or NULL to use the
-	 *  default transition time.
-	 */
+	/** Transition time parameters for the state change. */
 	const struct bt_mesh_model_transition *transition;
 };
 
-/** Light temperature status. */
+/** Light CTL Temperature status message parameters. */
 struct bt_mesh_light_temp_status {
-	/** Current light temperature parameters. */
+	/** Current Temperature set parameters */
 	struct bt_mesh_light_temp current;
-	/** Target light temperature parameters. */
+	/** Target Temperature set parameters */
 	struct bt_mesh_light_temp target;
 	/** Remaining time for the state change (ms). */
-	uint32_t remaining_time;
+	int32_t remaining_time;
 };
 
-/** Light temperature range parameters. */
+/** Light CTL range parameters. */
 struct bt_mesh_light_temp_range {
-	/** Minimum light temperature. */
+	/** Minimum range value */
 	uint16_t min;
-	/** Maximum light temperature. */
+	/** Maximum range value */
 	uint16_t max;
 };
 
 /** Light CTL range status message parameters. */
 struct bt_mesh_light_temp_range_status {
-	/** Status of the previous operation. */
-	enum bt_mesh_model_status status;
-	/** Current light temperature range. */
+	/** Range set status code */
+	enum bt_mesh_model_status status_code;
+	/** Range set parameters */
 	struct bt_mesh_light_temp_range range;
 };
 
 /** @cond INTERNAL_HIDDEN */
-#define BT_MESH_LIGHT_CTL_GET BT_MESH_MODEL_OP_2(0x82, 0x5D)
-#define BT_MESH_LIGHT_CTL_SET BT_MESH_MODEL_OP_2(0x82, 0x5E)
-#define BT_MESH_LIGHT_CTL_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0x5F)
-#define BT_MESH_LIGHT_CTL_STATUS BT_MESH_MODEL_OP_2(0x82, 0x60)
-#define BT_MESH_LIGHT_TEMP_GET BT_MESH_MODEL_OP_2(0x82, 0x61)
-#define BT_MESH_LIGHT_TEMP_RANGE_GET BT_MESH_MODEL_OP_2(0x82, 0x62)
-#define BT_MESH_LIGHT_TEMP_RANGE_STATUS BT_MESH_MODEL_OP_2(0x82, 0x63)
-#define BT_MESH_LIGHT_TEMP_SET BT_MESH_MODEL_OP_2(0x82, 0x64)
-#define BT_MESH_LIGHT_TEMP_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0x65)
-#define BT_MESH_LIGHT_TEMP_STATUS BT_MESH_MODEL_OP_2(0x82, 0x66)
-#define BT_MESH_LIGHT_CTL_DEFAULT_GET BT_MESH_MODEL_OP_2(0x82, 0x67)
-#define BT_MESH_LIGHT_CTL_DEFAULT_STATUS BT_MESH_MODEL_OP_2(0x82, 0x68)
-#define BT_MESH_LIGHT_CTL_DEFAULT_SET BT_MESH_MODEL_OP_2(0x82, 0x69)
-#define BT_MESH_LIGHT_CTL_DEFAULT_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0x6A)
-#define BT_MESH_LIGHT_TEMP_RANGE_SET BT_MESH_MODEL_OP_2(0x82, 0x6B)
-#define BT_MESH_LIGHT_TEMP_RANGE_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0x6C)
+#define BT_MESH_LIGHT_CTL_GET BT_MESH_MODEL_OP_2(0x82, 0X5D)
+#define BT_MESH_LIGHT_CTL_SET BT_MESH_MODEL_OP_2(0x82, 0X5E)
+#define BT_MESH_LIGHT_CTL_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0X5F)
+#define BT_MESH_LIGHT_CTL_STATUS BT_MESH_MODEL_OP_2(0x82, 0X60)
+#define BT_MESH_LIGHT_TEMP_GET BT_MESH_MODEL_OP_2(0x82, 0X61)
+#define BT_MESH_LIGHT_TEMP_RANGE_GET BT_MESH_MODEL_OP_2(0x82, 0X62)
+#define BT_MESH_LIGHT_TEMP_RANGE_STATUS BT_MESH_MODEL_OP_2(0x82, 0X63)
+#define BT_MESH_LIGHT_TEMP_SET BT_MESH_MODEL_OP_2(0x82, 0X64)
+#define BT_MESH_LIGHT_TEMP_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0X65)
+#define BT_MESH_LIGHT_TEMP_STATUS BT_MESH_MODEL_OP_2(0x82, 0X66)
+#define BT_MESH_LIGHT_CTL_DEFAULT_GET BT_MESH_MODEL_OP_2(0x82, 0X67)
+#define BT_MESH_LIGHT_CTL_DEFAULT_STATUS BT_MESH_MODEL_OP_2(0x82, 0X68)
+#define BT_MESH_LIGHT_CTL_DEFAULT_SET BT_MESH_MODEL_OP_2(0x82, 0X69)
+#define BT_MESH_LIGHT_CTL_DEFAULT_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0X6A)
+#define BT_MESH_LIGHT_TEMP_RANGE_SET BT_MESH_MODEL_OP_2(0x82, 0X6B)
+#define BT_MESH_LIGHT_TEMP_RANGE_SET_UNACK BT_MESH_MODEL_OP_2(0x82, 0X6C)
 
 #define BT_MESH_LIGHT_CTL_MSG_LEN_GET 0
 #define BT_MESH_LIGHT_CTL_MSG_MINLEN_SET 7

@@ -24,11 +24,12 @@ The sample has two TNEP services defined, each of them containing the NDEF text 
 Requirements
 ************
 
-The sample supports the following development kits:
+One of the following boards:
 
-.. table-from-rows:: /includes/sample_board_rows.txt
-   :header: heading
-   :rows: nrf5340dk_nrf5340_cpuapp_and_cpuappns, nrf52840dk_nrf52840, nrf52dk_nrf52832, nrf52833dk_nrf52833
+  * |nRF5340DK|
+  * |nRF52840DK|
+  * |nRF52DK|
+  * |nRF52833DK|
 
 User interface
 **************
@@ -55,11 +56,11 @@ Building and running
 Testing
 =======
 
-After programming the sample to your development kit, you can test it with an NFC-A polling device that supports NFC's Tag NDEF Exchange Protocol.
+After programming the sample to your board, you can test it with an NFC-A polling device that supports NFC's Tag NDEF Exchange Protocol.
 
 1. |connect_terminal|
-#. Reset the kit.
-#. Touch the NFC antenna with the NFC polling device.
+#. Reset the board.
+#. Touch the board antenna with the NFC polling device.
 #. Observe the output in the terminal.
 #. If the NFC polling device selects the service two, you have 27 seconds to press Button 1 to provide application data.
    If you do not do this, the NFC polling device will deselect the service.

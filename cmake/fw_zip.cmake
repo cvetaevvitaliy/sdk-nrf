@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2020 Nordic Semiconductor ASA
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 function(generate_dfu_zip)
@@ -20,7 +20,8 @@ function(generate_dfu_zip)
   endif()
 
   add_custom_command(
-    OUTPUT ${GENZIP_OUTPUT}
+    TARGET ${GENZIP_TARGET}
+    POST_BUILD
     COMMAND
     ${PYTHON_EXECUTABLE}
     ${NRF_DIR}/scripts/bootloader/generate_zip.py
@@ -30,16 +31,6 @@ function(generate_dfu_zip)
     "type=${GENZIP_TYPE}"
     "board=${CONFIG_BOARD}"
     "soc=${CONFIG_SOC}"
-    DEPENDS ${GENZIP_TARGET}
-    )
-
-  get_filename_component(TARGET_NAME ${GENZIP_OUTPUT} NAME)
-  string(REPLACE "." "_" TARGET_NAME ${TARGET_NAME})
-
-  add_custom_target(
-    ${TARGET_NAME}
-    ALL
-    DEPENDS ${GENZIP_OUTPUT}
     )
 
 endfunction()

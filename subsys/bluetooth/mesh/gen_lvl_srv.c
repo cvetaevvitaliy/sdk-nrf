@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <string.h>
@@ -257,26 +257,12 @@ static const struct bt_mesh_scene_entry_type scene_type = {
 	.recall = scene_recall,
 };
 
-static int update_handler(struct bt_mesh_model *model)
-{
-	struct bt_mesh_lvl_srv *srv = model->user_data;
-	struct bt_mesh_lvl_status status = { 0 };
-
-	srv->handlers->get(srv, NULL, &status);
-	encode_status(&status, model->pub->msg);
-
-	return 0;
-}
-
 static int bt_mesh_lvl_srv_init(struct bt_mesh_model *model)
 {
 	struct bt_mesh_lvl_srv *srv = model->user_data;
 
 	srv->model = model;
-	srv->pub.msg = &srv->pub_buf;
-	srv->pub.update = update_handler;
-	net_buf_simple_init_with_data(&srv->pub_buf, srv->pub_data,
-				      sizeof(srv->pub_data));
+	net_buf_simple_init(model->pub->msg, 0);
 
 	if (IS_ENABLED(CONFIG_BT_MESH_SCENE_SRV)) {
 		bt_mesh_scene_entry_add(model, &srv->scene, &scene_type, false);
@@ -285,15 +271,20 @@ static int bt_mesh_lvl_srv_init(struct bt_mesh_model *model)
 	return 0;
 }
 
-static void bt_mesh_lvl_srv_reset(struct bt_mesh_model *model)
-{
-	net_buf_simple_reset(model->pub->msg);
-}
-
 const struct bt_mesh_model_cb _bt_mesh_lvl_srv_cb = {
 	.init = bt_mesh_lvl_srv_init,
-	.reset = bt_mesh_lvl_srv_reset,
 };
+
+int _bt_mesh_lvl_srv_update_handler(struct bt_mesh_model *model)
+{
+	struct bt_mesh_lvl_srv *srv = model->user_data;
+	struct bt_mesh_lvl_status status = { 0 };
+
+	srv->handlers->get(srv, NULL, &status);
+
+	encode_status(&status, model->pub->msg);
+	return 0;
+}
 
 int bt_mesh_lvl_srv_pub(struct bt_mesh_lvl_srv *srv,
 			struct bt_mesh_msg_ctx *ctx,

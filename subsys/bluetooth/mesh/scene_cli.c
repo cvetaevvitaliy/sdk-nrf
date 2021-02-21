@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <sys/byteorder.h>
 #include <bluetooth/mesh/models.h>
@@ -111,23 +111,12 @@ static int scene_cli_init(struct bt_mesh_model *mod)
 	net_buf_simple_init_with_data(&cli->pub_msg, cli->buf,
 				      sizeof(cli->buf));
 	cli->pub.msg = &cli->pub_msg;
-	model_ack_init(&cli->ack);
 
 	return 0;
 }
 
-
-static void scene_cli_reset(struct bt_mesh_model *mod)
-{
-	struct bt_mesh_scene_cli *cli = mod->user_data;
-
-	net_buf_simple_reset(cli->pub.msg);
-	model_ack_reset(&cli->ack);
-}
-
 const struct bt_mesh_model_cb _bt_mesh_scene_cli_cb = {
 	.init = scene_cli_init,
-	.reset = scene_cli_reset,
 };
 
 int bt_mesh_scene_cli_get(struct bt_mesh_scene_cli *cli,
@@ -231,8 +220,7 @@ int bt_mesh_scene_cli_recall(struct bt_mesh_scene_cli *cli,
 				 BT_MESH_SCENE_MSG_MAXLEN_RECALL);
 	bt_mesh_model_msg_init(&buf, BT_MESH_SCENE_OP_RECALL);
 
-	if (scene == BT_MESH_SCENE_NONE ||
-	    model_transition_is_invalid(transition)) {
+	if (scene == BT_MESH_SCENE_NONE) {
 		return -EINVAL;
 	}
 
@@ -246,7 +234,7 @@ int bt_mesh_scene_cli_recall(struct bt_mesh_scene_cli *cli,
 			       BT_MESH_SCENE_OP_STATUS, rsp);
 }
 
-int bt_mesh_scene_cli_recall_unack(
+int bt_esh_scene_cli_recall_unack(
 	struct bt_mesh_scene_cli *cli, struct bt_mesh_msg_ctx *ctx,
 	uint16_t scene, const struct bt_mesh_model_transition *transition)
 {
@@ -254,8 +242,7 @@ int bt_mesh_scene_cli_recall_unack(
 				 BT_MESH_SCENE_MSG_MAXLEN_RECALL);
 	bt_mesh_model_msg_init(&buf, BT_MESH_SCENE_OP_RECALL_UNACK);
 
-	if (scene == BT_MESH_SCENE_NONE ||
-	    model_transition_is_invalid(transition)) {
+	if (scene == BT_MESH_SCENE_NONE) {
 		return -EINVAL;
 	}
 

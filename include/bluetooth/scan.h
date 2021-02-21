@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2018 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /**@file
@@ -60,7 +60,7 @@ extern "C" {
 
 /**@brief Uses the combination of all filters. */
 #define BT_SCAN_ALL_FILTER 0x3F
-/** @} */
+/* @} */
 
 
 /**@brief Scan types.
@@ -547,6 +547,8 @@ void bt_scan_blocklist_clear(void);
 }
 #endif
 
-#endif /* BT_SCAN_H_ */
+/**
+ * @}
+ */
 
-/** @} */
+#endif /* BT_SCAN_H_ */

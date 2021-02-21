@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 /**@file
@@ -28,22 +28,9 @@ extern "C" {
  *         topic that will be published to.
  */
 enum aws_iot_topic_type {
-	/** Unknown device shadow topic. */
 	AWS_IOT_SHADOW_TOPIC_UNKNOWN = 0x0,
-	/** This topic type corresponds to
-	 *  $aws/things/<thing-name>/shadow/get, publishing an empty message
-	 *  to this topic requests the device shadow document.
-	 */
 	AWS_IOT_SHADOW_TOPIC_GET,
-	/** This topic type corresponds to
-	 *  $aws/things/<thing-name>/shadow/update, publishing data to this
-	 *  topic updates the device shadow document.
-	 */
 	AWS_IOT_SHADOW_TOPIC_UPDATE,
-	/** This topic type corresponds to
-	 *  $aws/things/<thing-name>/shadow/delete, publishing an empty message
-	 *  to this topic deletes the device Shadow document.
-	 */
 	AWS_IOT_SHADOW_TOPIC_DELETE
 };
 
@@ -98,12 +85,7 @@ enum aws_iot_evt_type {
 	AWS_IOT_EVT_FOTA_ERASE_DONE,
 	/** FOTA progress notification. */
 	AWS_IOT_EVT_FOTA_DL_PROGRESS,
-	/** FOTA error. Used to propagate FOTA-related errors to the
-	 *  application. This is to distinguish between AWS_IOT irrecoverable
-	 *  errors and FOTA errors, so they can be handled differently.
-	 */
-	AWS_IOT_EVT_FOTA_ERROR,
-	/** AWS IoT library irrecoverable error. */
+	/** AWS IoT library error. */
 	AWS_IOT_EVT_ERROR
 };
 

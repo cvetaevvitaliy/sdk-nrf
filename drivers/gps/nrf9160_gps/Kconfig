@@ -2,12 +2,12 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 menuconfig NRF9160_GPS
 	bool "nRF9160 GPS driver [experimental]"
-	depends on NRF_MODEM_LIB
+	depends on BSD_LIBRARY
 	# FPU_SHARING needs to be enabled if FPU is enabled, as other contexts
 	# might also use the FPU.
 	select FPU_SHARING if FPU

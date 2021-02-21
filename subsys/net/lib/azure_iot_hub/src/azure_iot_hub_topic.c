@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2020 Nordic Semiconductor ASA
+ * Copyright (client) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -307,14 +307,12 @@ char *azure_iot_hub_prop_bag_str_get(struct azure_iot_hub_prop_bag *bags,
 
 	for (size_t i = 0; i < count; i++) {
 		if (i == 0) {
-#if defined(CONFIG_AZURE_IOT_HUB_TOPIC_PROPERTY_BAG_PREFIX)
 			buf[0] = '?';
-			written++;
-#endif
 		} else {
 			buf[written] = '&';
-			written++;
 		}
+
+		written++;
 
 		if (bags[i].value == NULL) {
 			len = snprintk(&buf[written], total_len - written,

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <zephyr.h>
@@ -24,7 +24,7 @@ LOG_MODULE_REGISTER(pcd, CONFIG_PCD_LOG_LEVEL);
 #include <hal/nrf_reset.h>
 #include <hal/nrf_spu.h>
 /** Offset which the application should be copied into */
-#define NET_CORE_APP_OFFSET PM_CPUNET_B0N_CONTAINER_SIZE
+#define NET_CORE_APP_OFFSET PM_CPUNET_B0N_SIZE
 #endif
 
 struct pcd_cmd {
@@ -141,11 +141,6 @@ int pcd_network_core_update(const void *src_addr, size_t len)
 	LOG_INF("Turned on network core");
 
 	do {
-		/* Wait for 1 second to avoid issue where network core
-		 * is unable to write to shared RAM.
-		 */
-		k_busy_wait(1 * USEC_PER_SEC);
-
 		err = pcd_fw_copy_status_get();
 	} while (err == PCD_STATUS_COPY);
 
@@ -162,7 +157,7 @@ int pcd_network_core_update(const void *src_addr, size_t len)
 
 void pcd_lock_ram(void)
 {
-	uint32_t region = PCD_CMD_ADDRESS/CONFIG_NRF_SPU_RAM_REGION_SIZE;
+	uint32_t region = (PCD_CMD_ADDRESS/CONFIG_NRF_SPU_RAM_REGION_SIZE) + 1;
 
 	nrf_spu_ramregion_set(NRF_SPU, region, true, NRF_SPU_MEM_PERM_READ,
 			true);

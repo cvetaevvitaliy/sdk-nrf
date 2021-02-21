@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2018 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <drivers/gpio.h>
@@ -404,7 +404,6 @@ static const struct gps_driver_api gps_sim_api_funcs = {
 #define GPS_INIT_PRIORITY 90
 #endif
 
-DEVICE_DEFINE(gps_sim, CONFIG_GPS_SIM_DEV_NAME,
-	      gps_sim_setup, device_pm_control_nop,
-	      &gps_sim_data, NULL, POST_KERNEL, GPS_INIT_PRIORITY,
-	      &gps_sim_api_funcs);
+DEVICE_AND_API_INIT(gps_sim, CONFIG_GPS_SIM_DEV_NAME, gps_sim_setup,
+		    &gps_sim_data, NULL, POST_KERNEL, GPS_INIT_PRIORITY,
+		    &gps_sim_api_funcs);

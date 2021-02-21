@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <string.h>
 #include <zephyr.h>
 #include <stdlib.h>
 #include <net/socket.h>
-#include <modem/nrf_modem_lib.h>
+#include <modem/bsdlib.h>
 #include <net/tls_credentials.h>
 #include <modem/lte_lc.h>
 #include <modem/at_cmd.h>
@@ -155,9 +155,9 @@ void main(void)
 
 	printk("HTTPS client sample started\n\r");
 
-	err = nrf_modem_lib_init(NORMAL_MODE);
+	err = bsdlib_init();
 	if (err) {
-		printk("Failed to initialize modem library!");
+		printk("Failed to initialize bsdlib!");
 		return;
 	}
 

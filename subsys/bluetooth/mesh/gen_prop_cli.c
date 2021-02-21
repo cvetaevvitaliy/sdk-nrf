@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <bluetooth/mesh/gen_prop_cli.h>
 #include <sys/util.h>
@@ -103,7 +103,7 @@ static void property_status(struct bt_mesh_model *mod,
 	val.meta.id = net_buf_simple_pull_le16(buf);
 	val.meta.user_access = net_buf_simple_pull_u8(buf);
 	val.size = buf->len;
-	val.value = net_buf_simple_pull_mem(buf, val.size);
+	val.value = net_buf_simple_tail(buf);
 
 	if (model_ack_match(&cli->ack_ctx,
 			    op_get(BT_MESH_PROP_OP_PROP_STATUS, kind), ctx)) {
@@ -165,39 +165,25 @@ static int bt_mesh_prop_cli_init(struct bt_mesh_model *mod)
 	struct bt_mesh_prop_cli *cli = mod->user_data;
 
 	cli->model = mod;
-	cli->pub.msg = &cli->pub_buf;
-	net_buf_simple_init_with_data(&cli->pub_buf, cli->pub_data,
-				      sizeof(cli->pub_data));
+	net_buf_simple_init(mod->pub->msg, 0);
 	model_ack_init(&cli->ack_ctx);
 
 	return 0;
 }
 
-static void bt_mesh_prop_cli_reset(struct bt_mesh_model *mod)
-{
-	struct bt_mesh_prop_cli *cli = mod->user_data;
-
-	net_buf_simple_reset(mod->pub->msg);
-	model_ack_reset(&cli->ack_ctx);
-}
-
 const struct bt_mesh_model_cb _bt_mesh_prop_cli_cb = {
 	.init = bt_mesh_prop_cli_init,
-	.reset = bt_mesh_prop_cli_reset,
 };
 
-static int props_get(struct bt_mesh_prop_cli *cli, struct bt_mesh_msg_ctx *ctx,
-		     enum bt_mesh_prop_srv_kind kind, uint16_t id,
-		     struct bt_mesh_prop_list *rsp)
+int bt_mesh_prop_cli_props_get(struct bt_mesh_prop_cli *cli,
+			       struct bt_mesh_msg_ctx *ctx,
+			       enum bt_mesh_prop_srv_kind kind,
+			       struct bt_mesh_prop_list *rsp)
 {
 	BT_MESH_MODEL_BUF_DEFINE(msg, BT_MESH_PROP_OP_ADMIN_PROPS_GET,
-				 BT_MESH_PROP_MSG_LEN_CLIENT_PROPS_GET);
+				 BT_MESH_PROP_MSG_LEN_PROPS_GET);
 
 	bt_mesh_model_msg_init(&msg, op_get(BT_MESH_PROP_OP_PROPS_GET, kind));
-
-	if (kind == BT_MESH_PROP_SRV_KIND_CLIENT) {
-		net_buf_simple_add_le16(&msg, id);
-	}
 
 	struct prop_list_ctx block_ctx = {
 		.list = rsp,
@@ -211,21 +197,6 @@ static int props_get(struct bt_mesh_prop_cli *cli, struct bt_mesh_msg_ctx *ctx,
 		status = block_ctx.status;
 	}
 	return status;
-}
-
-int bt_mesh_prop_cli_client_props_get(struct bt_mesh_prop_cli *cli,
-				      struct bt_mesh_msg_ctx *ctx, uint16_t id,
-				      struct bt_mesh_prop_list *rsp)
-{
-	return props_get(cli, ctx, BT_MESH_PROP_SRV_KIND_CLIENT, id, rsp);
-}
-
-int bt_mesh_prop_cli_props_get(struct bt_mesh_prop_cli *cli,
-			       struct bt_mesh_msg_ctx *ctx,
-			       enum bt_mesh_prop_srv_kind kind,
-			       struct bt_mesh_prop_list *rsp)
-{
-	return props_get(cli, ctx, kind, 0x0000, rsp);
 }
 
 int bt_mesh_prop_cli_prop_get(struct bt_mesh_prop_cli *cli,

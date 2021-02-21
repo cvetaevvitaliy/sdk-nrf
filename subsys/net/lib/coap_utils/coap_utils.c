@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #include <zephyr.h>
 #include <logging/log.h>
@@ -17,7 +17,7 @@ LOG_MODULE_REGISTER(coap_utils, CONFIG_COAP_UTILS_LOG_LEVEL);
 #define COAP_MAX_REPLIES 1
 #define COAP_POOL_SLEEP 500
 #define COAP_OPEN_SOCKET_SLEEP 200
-#if defined(CONFIG_NRF_MODEM_LIB)
+#if defined(CONFIG_BSD_LIBRARY)
 #define COAP_RECEIVE_STACK_SIZE 1000
 #else
 #define COAP_RECEIVE_STACK_SIZE 500
@@ -107,7 +107,6 @@ static void coap_receive(void)
 			continue;
 		}
 
-		from_addr_len = sizeof(from_addr);
 		len = recvfrom(fds.fd, buf, sizeof(buf) - 1, 0, &from_addr,
 			       &from_addr_len);
 
@@ -155,7 +154,7 @@ static int coap_init_request(enum coap_method method,
 
 	for (opt = uri_path_options; opt && *opt; opt++) {
 		ret = coap_packet_append_option(request, COAP_OPTION_URI_PATH,
-						*(const uint8_t *const *)opt, strlen(*opt));
+						*opt, strlen(*opt));
 		if (ret < 0) {
 			LOG_ERR("Unable add option to request");
 			goto end;

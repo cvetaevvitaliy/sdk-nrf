@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2018 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <stdint.h>
@@ -9,12 +9,11 @@
 #include <hal/nrf_spu.h>
 #include <errno.h>
 #include <soc.h>
-#include <nrf_erratas.h>
 
 
 #if defined(CONFIG_SOC_NRF5340_CPUAPP) \
 	&& defined(CONFIG_NRF5340_CPUAPP_ERRATUM19)
-#define SPU_BLOCK_SIZE (nrf53_errata_19() ? 32*1024 : 16*1024)
+#define SPU_BLOCK_SIZE (nrf53_has_erratum19() ? 32*1024 : 16*1024)
 #else
 #define SPU_BLOCK_SIZE CONFIG_FPROTECT_BLOCK_SIZE
 #endif

@@ -1,3 +1,7 @@
--r requirements-base.txt
--r requirements-build.txt
--r requirements-doc.txt
+ecdsa
+imagesize>=1.2.0
+intelhex
+recommonmark==0.6.0
+sphinxcontrib-mscgen
+west>=0.7.2
+pylint

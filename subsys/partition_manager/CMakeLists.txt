@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2019 Nordic Semiconductor
 #
-# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+# SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
 #
 
 function(preprocess_pm_yml in_file out_file)
@@ -20,20 +20,6 @@ function(preprocess_pm_yml in_file out_file)
   if(NOT "${ret}" STREQUAL "0")
     message(FATAL_ERROR "command failed with return code: ${ret}")
   endif()
-
-  if (DEFINED IMAGE_NAME)
-    # Share location of original source file so that the parent image can add it
-    # to the CMAKE_CONFIGURE_DEPENDS list.
-    share("list(APPEND ${IMAGE_NAME}PM_YML_DEP_FILES ${in_file})")
-
-    # Share location of preprocessed pm.yml file so that the parent image can
-    # use it as source for partition manager configuration.
-    share("list(APPEND ${IMAGE_NAME}PM_YML_FILES ${out_file})")
-  endif()
-
-  # Re-configure (Re-execute all CMakeLists.txt code) when original
-  # (not preprocessed) configuration file changes.
-  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${in_file})
 
 endfunction()
 
@@ -57,8 +43,8 @@ if (CONFIG_NVS AND NOT CONFIG_SETTINGS_NVS)
   ncs_add_partition_manager_config(pm.yml.nvs)
 endif()
 
-if (CONFIG_NRF_MODEM_LIB)
-  ncs_add_partition_manager_config(pm.yml.libmodem)
+if (CONFIG_BSD_LIBRARY)
+  ncs_add_partition_manager_config(pm.yml.bsdlib)
 endif()
 
 if (CONFIG_BT_RPMSG_NRF53)
@@ -67,14 +53,6 @@ endif()
 
 if (CONFIG_NRF53_UPGRADE_NETWORK_CORE)
   ncs_add_partition_manager_config(pm.yml.pcd)
-endif()
-
-if (CONFIG_BUILD_WITH_TFM)
-  ncs_add_partition_manager_config(pm.yml.tfm)
-endif()
-
-if (CONFIG_TRUSTED_EXECUTION_NONSECURE OR CONFIG_TRUSTED_EXECUTION_SECURE)
-  ncs_add_partition_manager_config(pm.yml.trustzone)
 endif()
 
 # We are using partition manager if we are a child image or if we are

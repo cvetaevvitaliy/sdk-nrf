@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2020 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <drivers/uart.h>
@@ -9,8 +9,6 @@
 #include <hal/nrf_gpio.h>
 #include <hal/nrf_gpiote.h>
 #include <logging/log.h>
-#include <sys/onoff.h>
-#include <drivers/clock_control/nrf_clock_control.h>
 
 LOG_MODULE_REGISTER(lpuart, CONFIG_NRF_SW_LPUART_LOG_LEVEL);
 
@@ -110,8 +108,6 @@ struct lpuart_data {
 
 	/* Set to true if request has been detected. */
 	bool rx_req;
-
-	struct onoff_client rx_clk_cli;
 
 #if CONFIG_NRF_SW_LPUART_INT_DRIVEN
 	struct lpuart_int_driven int_driven;
@@ -222,52 +218,12 @@ static void activate_rx(struct lpuart_data *data)
 	data->rx_state = RX_ACTIVE;
 }
 
-static void rx_hfclk_callback(struct onoff_manager *mgr,
-			      struct onoff_client *cli,
-			      uint32_t state, int res)
-{
-	struct lpuart_data *data =
-		CONTAINER_OF(cli, struct lpuart_data, rx_clk_cli);
-
-	__ASSERT_NO_MSG(res >= 0);
-
-	activate_rx(data);
-}
-
-static void rx_hfclk_request(struct lpuart_data *data)
-{
-	struct onoff_manager *mgr =
-		z_nrf_clock_control_get_onoff(CLOCK_CONTROL_NRF_SUBSYS_HF);
-	int err;
-
-	sys_notify_init_callback(&data->rx_clk_cli.notify, rx_hfclk_callback);
-	err = onoff_request(mgr, &data->rx_clk_cli);
-	__ASSERT_NO_MSG(err >= 0);
-}
-
-static void start_rx_activation(struct lpuart_data *data)
-{
-	if (IS_ENABLED(CONFIG_NRF_SW_LPUART_HFXO_ON_RX)) {
-		rx_hfclk_request(data);
-	} else {
-		activate_rx(data);
-	}
-}
-
 /* Called when end of transfer is detected. It sets response pin to idle and
  * disables RX.
  */
 static void deactivate_rx(struct lpuart_data *data)
 {
 	int err;
-
-	if (IS_ENABLED(CONFIG_NRF_SW_LPUART_HFXO_ON_RX)) {
-		struct onoff_manager *mgr =
-		     z_nrf_clock_control_get_onoff(CLOCK_CONTROL_NRF_SUBSYS_HF);
-
-		err = onoff_cancel_or_release(mgr, &data->rx_clk_cli);
-		__ASSERT_NO_MSG(err >= 0);
-	}
 
 	ctrl_pin_idle(&data->rdy_pin);
 	if (nrf_gpio_pin_read(data->rdy_pin.nrf_pin)) {
@@ -281,7 +237,7 @@ static void deactivate_rx(struct lpuart_data *data)
 	/* abort rx */
 	data->rx_state = RX_TO_IDLE;
 	err = uart_rx_disable(data->uart);
-	if (err < 0 && err != -EFAULT) {
+	if (err < 0) {
 		LOG_ERR("RX: Failed to disable (err: %d)", err);
 	}
 }
@@ -332,7 +288,7 @@ static void on_rdy_pin_change(struct lpuart_data *data)
 		LOG_DBG("RX: Request detected.");
 		data->rx_req = true;
 		if (data->rx_state == RX_IDLE) {
-			start_rx_activation(data);
+			activate_rx(data);
 		}
 	} else {
 		__ASSERT_NO_MSG(data->rx_state == RX_ACTIVE);
@@ -476,17 +432,16 @@ static void uart_callback(const struct device *uart, struct uart_event *evt,
 
 	case UART_RX_DISABLED:
 		LOG_DBG("Rx disabled");
-		__ASSERT_NO_MSG((data->rx_state != RX_IDLE) &&
+		__ASSERT_NO_MSG((data->rx_state != RX_ACTIVE) &&
+			 (data->rx_state != RX_IDLE) &&
 			 (data->rx_state != RX_OFF));
 
 		if (data->rx_state == RX_TO_IDLE) {
 			/* Need to request new buffer since uart was disabled */
 			evt->type = UART_RX_BUF_REQUEST;
-		} else {
-			data->rx_buf = NULL;
+		} else if (data->rx_state == RX_TO_OFF) {
 			data->rx_state = RX_OFF;
 		}
-
 		user_callback(dev, evt);
 		break;
 	case UART_RX_STOPPED:
@@ -613,7 +568,7 @@ static int api_rx_enable(const struct device *dev, uint8_t *buf,
 	irq_unlock(key);
 
 	if (pending_rx) {
-		start_rx_activation(data);
+		activate_rx(data);
 	}
 
 	return 0;
@@ -632,7 +587,7 @@ static int api_rx_buf_rsp(const struct device *dev, uint8_t *buf, size_t len)
 
 		if (data->rx_req) {
 			LOG_DBG("RX: Pending request. Activating RX");
-			start_rx_activation(data);
+			activate_rx(data);
 		} else {
 			data->rx_state = RX_IDLE;
 			LOG_DBG("RX: Idle");
@@ -731,6 +686,11 @@ static int api_fifo_read(const struct device *dev,
 		       &data->int_driven.rxbuf[data->int_driven.rxrd],
 		       cpylen);
 		data->int_driven.rxrd += cpylen;
+		if ((data->rx_state == RX_IDLE)
+		    && !int_driven_rd_available(data)) {
+			/* Whole packet read, RX can be re-enabled. */
+			int_driven_rx_feed(dev, data);
+		}
 	}
 
 	return cpylen;
@@ -803,16 +763,6 @@ static void api_irq_rx_enable(const struct device *dev)
 	data->int_driven.rx_enabled = true;
 	if (int_driven_rd_available(data)) {
 		data->int_driven.callback(dev, data->int_driven.user_data);
-	}
-
-	/* If RX was disabled and there were pending data, it may have been
-	 * processed above after re-enabling. If whole data has been processed
-	 * we must feed the buffer back to the uart to allow reception of the
-	 * next packet.
-	 */
-	if (!int_driven_rd_available(data) && data->rx_state == RX_TO_IDLE) {
-		/* Whole packet read, RX can be re-enabled. */
-		int_driven_rx_feed(dev, data);
 	}
 }
 
@@ -1017,7 +967,6 @@ static const struct uart_driver_api lpuart_api = {
 #endif
 };
 
-DEVICE_DEFINE(lpuart, "LPUART", lpuart_init, device_pm_control_nop,
-	      &lpuart_data, &lpuart_config,
-	      POST_KERNEL, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
-	      &lpuart_api);
+DEVICE_AND_API_INIT(lpuart, "LPUART", lpuart_init, &lpuart_data,
+		    &lpuart_config, POST_KERNEL,
+		    CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &lpuart_api);

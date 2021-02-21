@@ -7,7 +7,7 @@
 /*
  * Copyright (c) 2018 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 #ifndef ZEPHYR_INCLUDE_GPS_H_
 #define ZEPHYR_INCLUDE_GPS_H_
@@ -76,30 +76,6 @@ enum gps_nav_mode {
 	GPS_NAV_MODE_PERIODIC,
 };
 
-enum gps_use_case {
-	/* Target best single cold start performance. */
-	GPS_USE_CASE_SINGLE_COLD_START,
-
-	/* Target best multiple hot starts performance. */
-	GPS_USE_CASE_MULTIPLE_HOT_START,
-};
-
-enum gps_accuracy {
-	/** Use normal accuracy thresholds for producing GPS fix. */
-	GPS_ACCURACY_NORMAL,
-
-	/** Allow low accuracy fixes using 3 satellites.
-	 *  Note that one of the two conditions must be met:
-	 *	- Altitude, accurate within 10s of meters provided using
-	 *	  gps_agps_write(). Valid for 24 hours.
-	 *	- One fix using 5 or more satellites in the previous 24 hours,
-	 *	  without the device rebooting in the meantime.
-	 *
-	 *  See the GNSS documentation for more details.
-	 */
-	GPS_ACCURACY_LOW,
-};
-
 enum gps_power_mode {
 	/* Best GPS performance. */
 	GPS_POWER_MODE_DISABLED,
@@ -118,12 +94,6 @@ struct gps_config {
 
 	/* Power mode, @ref enum gps_power_mode. */
 	enum gps_power_mode power_mode;
-
-	/* GPS use case, @ref enum gps_use_case. */
-	enum gps_use_case use_case;
-
-	/* Accuracy threshold for producing fix, @ref enum gps_accuracy. */
-	enum gps_accuracy accuracy;
 
 	/* Interval, in seconds, at which to start GPS search. The value is
 	 * ignored outside periodic mode. Minimum accepted value is 10 seconds.

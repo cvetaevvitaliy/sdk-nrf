@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2019 Nordic Semiconductor ASA
  *
- * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ * SPDX-License-Identifier: LicenseRef-BSD-5-Clause-Nordic
  */
 
 #include <ctype.h>
@@ -17,13 +17,6 @@
 
 #define AT_CMD_MAX_ARRAY_SIZE 32
 
-#define AT_CMD_CGEV_LEN         5
-#define AT_CMD_CPIN_LEN         5
-#define AT_CMD_SHORTSWVER_LEN   11
-#define AT_CMD_HWVERSION_LEN    10
-#define AT_CMD_XMODEMUUID_LEN   11
-#define AT_CMD_XICCID_LEN       7
-
 enum at_parser_state {
 	IDLE,
 	ARRAY,
@@ -34,12 +27,9 @@ enum at_parser_state {
 	NOTIFICATION,
 	COMMAND,
 	OPTIONAL,
-	CLAC,
 };
 
 static enum at_parser_state state;
-
-static bool set_type_string;
 
 static inline void set_new_state(enum at_parser_state new_state)
 {
@@ -49,8 +39,6 @@ static inline void set_new_state(enum at_parser_state new_state)
 static inline void reset_state(void)
 {
 	state = IDLE;
-
-	set_type_string = false;
 }
 
 static inline void skip_command_prefix(const char **cmd)
@@ -64,22 +52,6 @@ static inline void skip_command_prefix(const char **cmd)
 	(*cmd)++;
 }
 
-static inline bool check_response_for_forced_string(const char *tmpstr)
-{
-	bool retval = false;
-
-	if (!strncmp(tmpstr, "+CGEV", AT_CMD_CGEV_LEN) ||
-	    !strncmp(tmpstr, "+CPIN", AT_CMD_CPIN_LEN) ||
-	    !strncmp(tmpstr, "%SHORTSWVER", AT_CMD_SHORTSWVER_LEN) ||
-	    !strncmp(tmpstr, "%HWVERSION", AT_CMD_HWVERSION_LEN) ||
-	    !strncmp(tmpstr, "%XMODEMUUID", AT_CMD_XMODEMUUID_LEN) ||
-	    !strncmp(tmpstr, "%XICCID", AT_CMD_XICCID_LEN)) {
-			retval = true;
-	}
-
-	return retval;
-}
-
 static int at_parse_detect_type(const char **str, int index)
 {
 	const char *tmpstr = *str;
@@ -89,15 +61,6 @@ static int at_parse_detect_type(const char **str, int index)
 		 * notification ID, (eg +CEREG:)
 		 */
 		set_new_state(NOTIFICATION);
-
-		/* Check for responses we know need to be strings */
-		set_type_string = check_response_for_forced_string(tmpstr);
-
-	} else if (set_type_string) {
-		set_new_state(STRING);
-	} else if ((index == 0) && is_clac(tmpstr)) {
-		/* Next, check if we deal with CLAC response (eg AT+, AT%) */
-		set_new_state(CLAC);
 	} else if ((index == 0) && is_command(tmpstr)) {
 		/* Next, check if we deal with command (eg AT+CCLK) */
 		set_new_state(COMMAND);
@@ -249,12 +212,12 @@ static int at_parse_process_element(const char **str, int index,
 		tmpstr++;
 	} else if (state == NUMBER) {
 		char *next;
-		int32_t value = (int32_t)strtol(tmpstr, &next, 10);
+		int value = (uint32_t)strtoul(tmpstr, &next, 10);
 
 		tmpstr = next;
 
-		if ((value <= SHRT_MAX) && (value >= SHRT_MIN)) {
-			at_params_short_put(list, index, (int16_t)value);
+		if (value <= USHRT_MAX) {
+			at_params_short_put(list, index, (uint16_t)value);
 		} else {
 			at_params_int_put(list, index, value);
 		}
@@ -263,15 +226,6 @@ static int at_parse_process_element(const char **str, int index,
 		const char *start_ptr = tmpstr;
 
 		while (isxdigit((int)*tmpstr)) {
-			tmpstr++;
-		}
-
-		at_params_string_put(list, index, start_ptr,
-				     tmpstr - start_ptr);
-	} else if (state == CLAC) {
-		const char *start_ptr = tmpstr;
-
-		while (!is_terminated(*tmpstr)) {
 			tmpstr++;
 		}
 
